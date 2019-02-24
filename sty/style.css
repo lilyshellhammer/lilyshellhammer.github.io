@@ -1,0 +1,50 @@
+canvas {
+    border: 1px solid black;
+
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    background: url('../img/brillo.jpg');
+    background-repeat: no-repeat;    
+    background-size: cover;
+}
+
+body {
+    background-color: black;
+}
+
+
+img {
+    display: none;
+}
+
+div {
+    padding: 10px;
+    text-align: center;
+    color: black;
+    
+}
+
+.gameSurround {
+    margin: 50px;
+    background-color: lightgrey;
+}
+
+head{
+    background-color: white;
+}
+
+button {
+    border-radius: 10px;
+    background-color: lightgrey;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
