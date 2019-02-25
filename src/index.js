@@ -4,39 +4,24 @@ const GAME_HEIGHT = 500;
 const N_WIDTH = 15;
 const N_HEIGHT = 10;
 const TILE_SIZE = 75;
+const OBJ_SIZE = 40;
 //35 px by 35 px
 
 
 /****************************************************************************************************/
 //NPC Functions
 
-function generate_npc() {
-    //somehow get this to be dynamic, reading from file probably
-}
-
-
-/****************************************************************************************************/
-//Drink Functions
-
-//function Drink() {
-//    this.carried = 0
-//    this.position = {
-//        x: (GAME_WIDTH - 50),
-//        y: 80
+//function generate_npc() {
+//    npc = {
+//        x: 0, 
+//        y: 0,
+//        img: "/img/noah.png"
 //    }
+//    return npc;
 //}
 //
-//Drink.prototype.draw(ctx){
-//    drawing = new Image();
-//    drawing.src = 'img/drink.png';
-//    size = TILE_SIZE
-//    x = this.position.x
-//    y = this.position.y
-//    ctx.drawImage(drawing, x, y, size, size)
-//}
-//
-//Drink.prototype.update(){
-//    
+//function draw_npcs(npcs, ctx){
+//    for ( var i = 0; i < length(); 
 //}
 
 /****************************************************************************************************/
@@ -104,7 +89,37 @@ Player.prototype.update = function (deltaTime) {
         this.position.y += this.speed.y;
 
 }
+/****************************************************************************************************/
+//Drink Functions
 
+function Drink(src, name, num) {
+    this.carried = 0
+    this.position = {
+        x: (GAME_WIDTH - 150),
+        y: (60 + 70*num)
+    }
+    this.imgSrc = src
+    this.name = name
+    this.size = OBJ_SIZE
+}
+
+Drink.prototype.draw = function(ctx){
+    drawing = new Image();
+    drawing.src = this.imgSrc
+    size = this.size
+    x = this.position.x
+    y = this.position.y
+    ctx.drawImage(drawing, x, y, size, size)
+}
+
+Drink.prototype.update = function (carried, player){
+    if(carried == 1){
+        this.carried = 1
+        this.position = player.position
+    }
+    if(carried == -1)
+        this.carried = 0
+}
 /****************************************************************************************************/
 function InputHandler(player) {
     document.addEventListener("keydown", event => {
@@ -192,7 +207,9 @@ function start() {
 
     let input = new InputHandler(player)
 
-
+    let drink1 = new Drink('img/martini.png', 'Martini', 1)
+    let drink2 = new Drink('img/cocktail.png', 'Vodka Cran', 2)
+    
     let lastTime = 0;
 
 
@@ -200,8 +217,15 @@ function start() {
         let deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
         ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        drink1.update()
+        drink1.draw(ctx)
+        
+        drink2.update()
+        drink2.draw(ctx)
+        
         player.update(deltaTime);
         player.draw(ctx);
+        
         requestAnimationFrame(gameLoop);
 
     }
