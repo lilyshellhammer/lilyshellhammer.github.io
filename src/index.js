@@ -3,25 +3,55 @@ const GAME_WIDTH = 750;
 const GAME_HEIGHT = 500;
 const N_WIDTH = 15;
 const N_HEIGHT = 10;
-const TILE_SIZE = 50;
+const TILE_SIZE = 75;
 //35 px by 35 px
 
 
 /****************************************************************************************************/
 //NPC Functions
 
-function generate_npc(){
+function generate_npc() {
     //somehow get this to be dynamic, reading from file probably
 }
 
+
+/****************************************************************************************************/
+//Drink Functions
+
+//function Drink() {
+//    this.carried = 0
+//    this.position = {
+//        x: (GAME_WIDTH - 50),
+//        y: 80
+//    }
+//}
+//
+//Drink.prototype.draw(ctx){
+//    drawing = new Image();
+//    drawing.src = 'img/drink.png';
+//    size = TILE_SIZE
+//    x = this.position.x
+//    y = this.position.y
+//    ctx.drawImage(drawing, x, y, size, size)
+//}
+//
+//Drink.prototype.update(){
+//    
+//}
 
 /****************************************************************************************************/
 //Player Functions
 function Player(name, size, x, y, imgSrc) {
     this.name = name
     this.size = size
-    this.x = x
-    this.y = y
+    this.position = {
+        x: 20,
+        y: GAME_HEIGHT/2 - 55
+    }
+    this.speed = {
+        x: 0,
+        y: 0
+    }
     this.imgSrc = imgSrc
 }
 
@@ -30,31 +60,50 @@ Player.prototype.draw = function (ctx) {
     drawing = new Image();
     drawing.src = this.imgSrc;
     size = this.size
-    posX = this.x * size
-    posY = this.y * size
-    ctx.drawImage(drawing, posX, posY, size, size)
+    x = this.position.x
+    y = this.position.y
+    ctx.drawImage(drawing, x, y, size, size)
 }
 
 Player.prototype.moveLeft = function () {
-    if (this.x >= 1) 
-        this.x -= 1;
+    this.speed.x = -2;
 }
 
 Player.prototype.moveRight = function () {
-    if (this.x <= N_WIDTH - 2)
-        this.x += 1;
+    this.speed.x = 2;
 }
 
 Player.prototype.moveDown = function () {
-    if (this.y <= N_HEIGHT - 2)
-        this.y += 1;
+    this.speed.y = 2;
 }
 
 Player.prototype.moveUp = function () {
-    if (this.y >= 1)
-            this.y -= 1;
+    this.speed.y = -2;
 }
 
+Player.prototype.stopX = function () {
+    this.speed.x = 0;
+}
+
+Player.prototype.stopY = function () {
+    this.speed.y = 0;
+}
+
+Player.prototype.update = function (deltaTime) {
+    
+    if (this.speed.x < 0 && this.position.x >= 10)
+        this.position.x += this.speed.x;
+    
+    else if (this.speed.x > 0 && this.position.x <= GAME_WIDTH - 100)
+        this.position.x += this.speed.x;
+    
+     if (this.speed.y < 0 && this.position.y >= 10)
+        this.position.y += this.speed.y;
+    
+    else if (this.speed.y > 0 && this.position.y <= GAME_HEIGHT - 100)
+        this.position.y += this.speed.y;
+
+}
 
 /****************************************************************************************************/
 function InputHandler(player) {
@@ -73,12 +122,27 @@ function InputHandler(player) {
                 player.moveDown();
                 break;
             case 32:
+                break;
+        }
+    });
 
+    document.addEventListener("keyup", event => {
+        switch (event.keyCode) {
+            case 37: //left
+                if (player.speed.x < 0) player.stopX();
+                break;
+            case 39:
+                if (player.speed.x > 0) player.stopX();
+                break;
+            case 38:
+                if (player.speed.y < 0) player.stopY();
+                break;
+            case 40:
+                if (player.speed.y > 0) player.stopY();
                 break;
         }
     });
 }
-
 /****************************************************************************************************/
 //MISC FUNCTIONS
 
@@ -124,13 +188,19 @@ function start() {
 
     //CREATE PLAYER
     //TODO: allow users to select character name, image, calculate tile size vs hardcoding 35
-    let player = new Player("lily", TILE_SIZE, 1, 1, 'img/noah.png');
+    let player = new Player("lily", 75, 1, 1, 'img/noah.png');
 
     let input = new InputHandler(player)
 
-    function gameLoop() {
+
+    let lastTime = 0;
+
+
+    function gameLoop(timeStamp) {
+        let deltaTime = timeStamp - lastTime;
+        lastTime = timeStamp;
         ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-       // _drawSquares(ctx);
+        player.update(deltaTime);
         player.draw(ctx);
         requestAnimationFrame(gameLoop);
 
