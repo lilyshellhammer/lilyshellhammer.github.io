@@ -8,12 +8,14 @@ const SIZE = 75;
 const OBJ_SIZE = 40;
 //35 px by 35 px
 const DJS_IMG_SIZE = 120
+const PEOPLE_SIZE = 100
+
 
 
 //TO CONVERT TO TEXT FILE
 const NPC_COL = 15
 const MINX = 2
-const MAXX = 5
+const MAXX = 8
 const MINY = 1
 const MAXY = 5
 
@@ -34,6 +36,7 @@ var usbPos = {
 }
 
 var count = 0;
+var countNpc = 0;
 
 var npcs = []
 var npcs_pos = []
@@ -42,65 +45,68 @@ var desired_npcs = 4;
 //NPC Functions
 
 function Npc() {
-    
+
     var x = -1
     var y = -1
-    while (!( (x,y) in npcs_pos)){
+    do {
         x = (Math.floor(Math.random() * (MAXX - MINX)) + MINX) * SIZE
         y = (Math.floor(Math.random() * (MAXY - MINY)) + MINY) * SIZE
-    }
+    } while (contains((x, y), npcs_pos))
     //add randomized funciton, read info on level from file
     this.position = {
         x: x,
         y: y,
     }
-    npcs_pos.push((x,y))
-    
-    
-    this.size = SIZE
+    npcs_pos.push(this.position)
 
-    //FIND NEW RANDOM SPRITE, if over 15 sprites, use any one, doesnt need to be exclusively random
-    var ranCol = -1;
-    var count = 0;
-    while (!(ranCol in usedNPCSprites)) {
-        if (count > 15)
+    this.size = SIZE
+    this.crop_size = PEOPLE_SIZE
+
+    //FIND NEW RANDOM SPRITE, if over 15 sprites, choose random, ignore repetition
+    var ranCol = -1
+    do {
+        ranCol = Math.floor(Math.random() * 15) + 0
+        if (npcs.length >= 15)
             break;
-        ranCol = Math.floor(Math.random() * 15)
-        count++;
-    }
+    } while (contains(ranCol, usedNPCSprites))
     //append used character
     usedNPCSprites.push(ranCol)
-    
-    console.log(usedNPCSprites)
 
     //speed: 0, necessary to reuse player sprite functions
-    var speed = {
+    this.speed = {
         x: 0,
         y: 0
     }
 
     //create sprite!
     //Prototype: Sprite(src, position, size, speed, dir, once, characterRow, characterCol)
-    this.sprite = new Sprite('img/people.png', this.position, this.size, speed, "dance", false, 0, ranCol);
+    this.sprite = new Sprite('img/people.png', this.position, this.size, this.crop_size, this.speed, "npc_dance", false, 0, ranCol);
 
 }
 
-//Npc.prototype.update() {
-//    
-//}
 
 Npc.prototype.draw = function (ctx) {
     this.sprite.draw(ctx)
 }
 
 function create_npcs() {
-    for (var i = 0; i < desired_npcs ; i++){
+    for (var i = 0; i < desired_npcs; i++) {
         npcs.push(new Npc)
     }
 }
 
+function update_npcs(deltaTime) {
+    if (countNpc === 16) countNpc = 0;
+    else countNpc = countNpc + 1;
+
+    for (var i = 0; i < npcs.length; i++) {
+        npcs[i].sprite.update(deltaTime, npcs[i].position, npcs[i].speed, countNpc)
+        //dt, position, speed, count
+    }
+}
+
 function draw_npcs(ctx) {
-    for (var i = 0; i < npcs.length; i++){
+    for (var i = 0; i < npcs.length; i++) {
         npcs[i].draw(ctx)
     }
 }
@@ -110,6 +116,7 @@ function draw_npcs(ctx) {
 function Player(name, size, x, y, imgSrc, characterCol) {
     this.name = name
     this.size = size
+    this.crop_size = DJS_IMG_SIZE
     this.position = {
         x: 20,
         y: GAME_HEIGHT / 2 - 55
@@ -121,10 +128,10 @@ function Player(name, size, x, y, imgSrc, characterCol) {
     this.imgSrc = imgSrc
 
     // url, position, size, speed is 6
-    // not dancing, just walking, false for repeat ania=m
-    // row is the row of said character
+    // not dancing, just walking, false for repeat anim
+    // row is pos start (Unused for now, possible if mult people on same row)
     // 0 is for colun start of character
-    this.sprite = new Sprite(this.imgSrc, this.position, this.size, 600, "default", false, 0, characterCol)
+    this.sprite = new Sprite(this.imgSrc, this.position, this.size, this.crop_size, 600, "default", false, 0, characterCol)
 }
 
 Player.prototype.draw = function (ctx) {
@@ -157,40 +164,59 @@ Player.prototype.stopY = function () {
 
 Player.prototype.update = function (deltaTime) {
 
-    if (this.speed.x < 0 && this.position.x >= 10)
+    if (this.speed.x < 0 && this.position.x >= 10 && !checkCollides(this.position, this.size)) {
         this.position.x += this.speed.x
-
-    else if (this.speed.x > 0 && this.position.x <= GAME_WIDTH - 100)
+        if (checkCollides(this.position, this.size))
+            this.position.x -= this.speed.x
+        
+    } else if (this.speed.x > 0 && this.position.x <= GAME_WIDTH - 100 && !checkCollides(this.position, this.size)) {
         this.position.x += this.speed.x
-
-    if (this.speed.y < 0 && this.position.y >= 10)
+        if (checkCollides(this.position, this.size))
+            this.position.x -= this.speed.x
+    }
+    
+    if (this.speed.y < 0 && this.position.y >= 10 && !checkCollides(this.position, this.size)) {
         this.position.y += this.speed.y
-
-    else if (this.speed.y > 0 && this.position.y <= GAME_HEIGHT - 100)
+        if (checkCollides(this.position, this.size))
+            this.position.y -= this.speed.y
+        
+    } else if (this.speed.y > 0 && this.position.y <= GAME_HEIGHT - 100) {
         this.position.y += this.speed.y
+        if (checkCollides(this.position, this.size))
+            this.position.y -= this.speed.y
+    }
 
     this.sprite.update(deltaTime, this.position, this.speed, count)
 
     if (count === 8) count = 0;
     else count = count + 1;
 
-
 }
+
+function checkCollides(position, size) {
+    for (var i = 0; i < npcs.length; i++) {
+        if (boxCollides(position, size, npcs[i].position, size))
+            return true;
+    }
+    return false;
+}
+
 
 /****************************************************************************************************/
 //Sprite Functions
 
 
 /********************************
-Sprite function code borrowed from 
+Sprite function code borrowed from (and edited)  
 https://jlongster.com/Making-Sprite-based-Games-with-Canvas
 ********************************/
-function Sprite(src, position, size, speed, type, once, characterRow, characterCol) {
+function Sprite(src, position, size, crop_size, speed, type, once, characterRow, characterCol) {
     this.position = {
         x: position.x,
         y: position.y
     }
     this.size = size;
+    this.crop_size = crop_size;
     this.speed = {
         x: speed.x,
         y: speed.y
@@ -214,20 +240,20 @@ Sprite.prototype.update = function (dt, position, speed, count) {
         x: position.x,
         y: position.y
     }
-    if (count == 0 && (this.speed.x !== 0 || this.speed.y !== 0))
+    if ((count == 0 && (this.speed.x !== 0 || this.speed.y !== 0)) || (count == 0 && this.type === "npc_dance"))
         this._index += 1;
 }
 
 Sprite.prototype.draw = function (ctx) {
 
-    var size = DJS_IMG_SIZE
+    var crop_size = this.crop_size
     //declare size of cropped image
     //get index of what frame we are in
     var idx = this._index
     var framesIn = []
 
     //get correct frames array based on direction
-    if (this.type == "npc_dance")
+    if (this.type === "npc_dance")
         framesIn = playerUpDown
     else if (this.speed.x === 0 && this.speed.y === 0)
         framesIn = playerStill
@@ -246,16 +272,16 @@ Sprite.prototype.draw = function (ctx) {
     //        return;
     //    }
 
-    xs = frame * size
-    xs += this.characterRow * size
-    ys = this.characterCol * size
+    xs = frame * crop_size
+    xs += this.characterRow * crop_size
+    ys = this.characterCol * crop_size
 
     //make new drawing
     drawing = new Image();
     drawing.src = this.imgSrc;
 
     ctx.drawImage(drawing, xs, ys,
-        size, size,
+        crop_size, crop_size,
         this.position.x, this.position.y,
         this.size, this.size);
 
@@ -348,34 +374,42 @@ function _drawSquares(ctx) {
 }
 
 
+function contains(element, array) {
+    for (var i = 0; i < array.length; i++) {
+        if (element === array[i])
+            return true
+    }
+    return false
+}
 /****************************************************************************************************/
 //Collision FUNCTIONS
+/********************************
+Collision functions (collides and box collides) code borrowed from (and edited)  
+https://jlongster.com/Making-Sprite-based-Games-with-Canvas
+********************************/
 function collides(x, y, r, b, x2, y2, r2, b2) {
     return !(r <= x2 || x > r2 ||
         b <= y2 || y > b2);
 }
 
 function boxCollides(pos, size, pos2, size2) {
-    return collides(pos[0], pos[1],
-        pos[0] + size[0], pos[1] + size[1],
-        pos2[0], pos2[1],
-        pos2[0] + size2[0], pos2[1] + size2[1]);
+    return collides(pos.x, pos.y,
+        pos.x + size, pos.y + size,
+        pos2.x, pos2.y,
+        pos2.x + size2, pos2.y + size2);
 }
-//function loadFloorplan(floorplan) {
-//    console.log("brillo is: " + floorplan)
-//    var floor = new Array();
-//    for (var j = 0; j < 15; j++) {
-//        var temp = new Array();
-//        for (var k = 0; k < 10; k++) {
-//            if (floorplan[j][k] == 1)
-//                temp.push(1)
-//            else
-//                temp.push(0)
+
+
+//function checkCollisions(player) {
+//    for (var i = 0; i < npcs.length; i++) {
+//        var pos = npcs[i].position;
+//        var size = npcs[i].size;
+//        if (boxCollides(pos, size, player.position, player.size)) {
+//            console.log("collision between player and npc " + i)
 //        }
-//        floor.push(temp)
 //    }
-//    return floor;
 //}
+
 
 
 /****************************************************************************************************/
@@ -400,22 +434,28 @@ function start() {
 
     let lastTime = 0;
 
+
     create_npcs();
+    //let test = new Npc()
     function gameLoop(timeStamp) {
         let deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
         ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         //_drawSquares(ctx)
+
         drink1.update()
         drink1.draw(ctx)
 
         drink2.update()
         drink2.draw(ctx)
-        
+
+        update_npcs(deltaTime)
         draw_npcs(ctx)
 
         player.update(deltaTime);
         player.draw(ctx);
+
+        //checkCollisions(player)
 
         requestAnimationFrame(gameLoop);
 
