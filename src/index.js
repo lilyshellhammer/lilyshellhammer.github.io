@@ -3,11 +3,19 @@ const GAME_WIDTH = 750;
 const GAME_HEIGHT = 500;
 const N_WIDTH = 15;
 const N_HEIGHT = 10;
-const TILE_SIZE = 75;
+const SIZE = 75;
+
 const OBJ_SIZE = 40;
 //35 px by 35 px
-const CLIP_SIZE = 72;
+const DJS_IMG_SIZE = 120
 
+
+//TO CONVERT TO TEXT FILE
+const NPC_COL = 15
+const MINX = 2
+const MAXX = 5
+const MINY = 1
+const MAXY = 5
 
 var playerUpDown = [0, 1, 0, 1]
 var playerLeft = [2, 3, 2, 4]
@@ -26,27 +34,76 @@ var usbPos = {
 }
 
 var count = 0;
+
+var npcs = []
+var npcs_pos = []
+var desired_npcs = 4;
 /****************************************************************************************************/
 //NPC Functions
 
-//function Npc(usedNPCSprites) {
-//    this.position = {
-//        x: 0,
-//        y: 0,
-//    }
-//    //this.sprite = new Sprite()
-//}
+function Npc() {
+    
+    var x = -1
+    var y = -1
+    while (!( (x,y) in npcs_pos)){
+        x = (Math.floor(Math.random() * (MAXX - MINX)) + MINX) * SIZE
+        y = (Math.floor(Math.random() * (MAXY - MINY)) + MINY) * SIZE
+    }
+    //add randomized funciton, read info on level from file
+    this.position = {
+        x: x,
+        y: y,
+    }
+    npcs_pos.push((x,y))
+    
+    
+    this.size = SIZE
+
+    //FIND NEW RANDOM SPRITE, if over 15 sprites, use any one, doesnt need to be exclusively random
+    var ranCol = -1;
+    var count = 0;
+    while (!(ranCol in usedNPCSprites)) {
+        if (count > 15)
+            break;
+        ranCol = Math.floor(Math.random() * 15)
+        count++;
+    }
+    //append used character
+    usedNPCSprites.push(ranCol)
+    
+    console.log(usedNPCSprites)
+
+    //speed: 0, necessary to reuse player sprite functions
+    var speed = {
+        x: 0,
+        y: 0
+    }
+
+    //create sprite!
+    //Prototype: Sprite(src, position, size, speed, dir, once, characterRow, characterCol)
+    this.sprite = new Sprite('img/people.png', this.position, this.size, speed, "dance", false, 0, ranCol);
+
+}
 
 //Npc.prototype.update() {
-//
+//    
 //}
-//
-//Npc.prototype.draw(ctx) {
-//
-//}
-//function draw_npcs(npcs, ctx){
-//    for ( var i = 0; i < length(); 
-//}
+
+Npc.prototype.draw = function (ctx) {
+    this.sprite.draw(ctx)
+}
+
+function create_npcs() {
+    for (var i = 0; i < desired_npcs ; i++){
+        npcs.push(new Npc)
+    }
+}
+
+function draw_npcs(ctx) {
+    for (var i = 0; i < npcs.length; i++){
+        npcs[i].draw(ctx)
+    }
+}
 
 /****************************************************************************************************/
 //Player Functions
@@ -113,7 +170,7 @@ Player.prototype.update = function (deltaTime) {
         this.position.y += this.speed.y
 
     this.sprite.update(deltaTime, this.position, this.speed, count)
-    
+
     if (count === 8) count = 0;
     else count = count + 1;
 
@@ -128,7 +185,7 @@ Player.prototype.update = function (deltaTime) {
 Sprite function code borrowed from 
 https://jlongster.com/Making-Sprite-based-Games-with-Canvas
 ********************************/
-function Sprite(src, position, size, speed, dir, once, characterRow, characterCol) {
+function Sprite(src, position, size, speed, type, once, characterRow, characterCol) {
     this.position = {
         x: position.x,
         y: position.y
@@ -142,6 +199,7 @@ function Sprite(src, position, size, speed, dir, once, characterRow, characterCo
     this._index = 0
     this.imgSrc = src
     this.once = once
+    this.type = type
     this.characterRow = characterRow
     this.characterCol = characterCol
 };
@@ -162,14 +220,16 @@ Sprite.prototype.update = function (dt, position, speed, count) {
 
 Sprite.prototype.draw = function (ctx) {
 
+    var size = DJS_IMG_SIZE
     //declare size of cropped image
     //get index of what frame we are in
     var idx = this._index
     var framesIn = []
-    
-    console.log(this.speed.x + " , " + this.speed.y)
+
     //get correct frames array based on direction
-    if (this.speed.x === 0 && this.speed.y === 0)
+    if (this.type == "npc_dance")
+        framesIn = playerUpDown
+    else if (this.speed.x === 0 && this.speed.y === 0)
         framesIn = playerStill
     else if (this.speed.x > 0)
         framesIn = playerRight
@@ -186,17 +246,16 @@ Sprite.prototype.draw = function (ctx) {
     //        return;
     //    }
 
-    row = frame * CLIP_SIZE
-
-    row += this.characterRow * CLIP_SIZE
-    col = this.characterCol * CLIP_SIZE
+    xs = frame * size
+    xs += this.characterRow * size
+    ys = this.characterCol * size
 
     //make new drawing
     drawing = new Image();
     drawing.src = this.imgSrc;
 
-    ctx.drawImage(drawing, row, col,
-        71, 71,
+    ctx.drawImage(drawing, xs, ys,
+        size, size,
         this.position.x, this.position.y,
         this.size, this.size);
 
@@ -279,10 +338,10 @@ function InputHandler(player) {
 function _drawSquares(ctx) {
     for (var j = 0; j < 15; j++) {
         for (var k = 0; k < 10; k++) {
-            x = j * TILE_SIZE;
-            y = k * TILE_SIZE;
+            x = j * SIZE;
+            y = k * SIZE;
 
-            ctx.rect(x, y, TILE_SIZE, TILE_SIZE);
+            ctx.rect(x, y, SIZE, SIZE);
             ctx.stroke();
         }
     }
@@ -332,7 +391,7 @@ function start() {
 
     //CREATE PLAYER
     //TODO: allow users to select character name, image, calculate tile size vs hardcoding 35
-    let player = new Player("lily", 75, 1, 1, 'img/djs.png', 4);
+    let player = new Player("lily", SIZE, 1, 1, 'img/djs.png', 3);
 
     let input = new InputHandler(player)
 
@@ -341,18 +400,19 @@ function start() {
 
     let lastTime = 0;
 
-
+    create_npcs();
     function gameLoop(timeStamp) {
         let deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
         ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
+        //_drawSquares(ctx)
         drink1.update()
         drink1.draw(ctx)
 
         drink2.update()
         drink2.draw(ctx)
-
+        
+        draw_npcs(ctx)
 
         player.update(deltaTime);
         player.draw(ctx);
