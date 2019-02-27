@@ -444,7 +444,7 @@ function contains(element, array) {
 }
 /****************************************************************************************************/
 
-function drawPossiblePlaces(ctx) {
+function _drawPossiblePlaces(ctx) {
     ctx.font = "15px Arial";
     for (var i = 0; i < places.length; i++) {
         var str = places[i][0] + " " + places[i][1]
@@ -492,7 +492,7 @@ function start() {
         player.draw(ctx);
 
         //checkCollisions(player)
-        drawPossiblePlaces(ctx)
+        //_drawPossiblePlaces(ctx)
         requestAnimationFrame(gameLoop);
 
     }
