@@ -14,9 +14,9 @@ const PEOPLE_SIZE = 100
 
 //TO CONVERT TO TEXT FILE
 const NPC_COL = 15
-const MINX = 2
-const MAXX = 8
-const MINY = 1
+const MINX = 3
+const MAXX = 7
+const MINY = 2
 const MAXY = 5
 
 var playerUpDown = [0, 1, 0, 1]
@@ -25,50 +25,55 @@ var playerRight = [7, 6, 7, 5]
 var playerStill = [0, 0, 0, 0]
 
 var usedNPCSprites = []
-var recordPos = {
-    x: 1,
-    y: 1
-}
 
-var usbPos = {
-    x: 0,
-    y: 1
-}
+
+var places = [
+    [3, 1], [3, 2], [3, 3], [3, 4], [3, 5],
+    [4, 1], [4, 2], [4, 3], [4, 4], [4, 5],
+    [4, 1], [4, 2], [4, 4], [4, 4], [4, 5],
+    [5, 1], [5, 2], [5, 3], [5, 4], [5, 5],
+    [6, 2], [6, 3], [6, 4], [6, 5], [7, 3],
+    [7, 4], [7, 5], [8, 5]
+]
+var placesHolder = []
 
 var count = 0;
 var countNpc = 0;
 
 var npcs = []
-var npcs_pos = []
 var desired_npcs = 4;
+var drinks = []
+var drink_options = [['img/martini.png', 'Martini'], ['img/cocktail.png', 'VodkaCran']]
+var desiredDrinks = 3;
 /****************************************************************************************************/
 //NPC Functions
 
 function Npc() {
 
-    var x = -1
-    var y = -1
-    do {
-        x = (Math.floor(Math.random() * (MAXX - MINX)) + MINX) * SIZE
-        y = (Math.floor(Math.random() * (MAXY - MINY)) + MINY) * SIZE
-    } while (contains((x, y), npcs_pos))
-    //add randomized funciton, read info on level from file
-    this.position = {
-        x: x,
-        y: y,
+    //get random location, that is available
+    var randPos = 0;
+    while (1) {
+        randPos = Math.floor(Math.random() * 28)
+        if (placesHolder[randPos] !== 1)
+            break;
     }
-    npcs_pos.push(this.position)
+    placesHolder[randPos] = 1
+    this.position = {
+        x: places[randPos][0] * SIZE,
+        y: places[randPos][1] * SIZE
+    }
 
+    console.log(this.position)
     this.size = SIZE
     this.crop_size = PEOPLE_SIZE
 
-    //FIND NEW RANDOM SPRITE, if over 15 sprites, choose random, ignore repetition
+    //Find random user
     var ranCol = -1
     do {
-        ranCol = Math.floor(Math.random() * 15) + 0
+        ranCol = Math.floor(Math.random() * 15)
         if (npcs.length >= 15)
             break;
-    } while (contains(ranCol, usedNPCSprites))
+    } while (usedNPCSprites.includes(ranCol))
     //append used character
     usedNPCSprites.push(ranCol)
 
@@ -96,7 +101,7 @@ function create_npcs() {
 }
 
 function update_npcs(deltaTime) {
-    if (countNpc === 16) countNpc = 0;
+    if (countNpc === 14) countNpc = 0;
     else countNpc = countNpc + 1;
 
     for (var i = 0; i < npcs.length; i++) {
@@ -168,18 +173,18 @@ Player.prototype.update = function (deltaTime) {
         this.position.x += this.speed.x
         if (checkCollides(this.position, this.size))
             this.position.x -= this.speed.x
-        
+
     } else if (this.speed.x > 0 && this.position.x <= GAME_WIDTH - 100 && !checkCollides(this.position, this.size)) {
         this.position.x += this.speed.x
         if (checkCollides(this.position, this.size))
             this.position.x -= this.speed.x
     }
-    
+
     if (this.speed.y < 0 && this.position.y >= 10 && !checkCollides(this.position, this.size)) {
         this.position.y += this.speed.y
         if (checkCollides(this.position, this.size))
             this.position.y -= this.speed.y
-        
+
     } else if (this.speed.y > 0 && this.position.y <= GAME_HEIGHT - 100) {
         this.position.y += this.speed.y
         if (checkCollides(this.position, this.size))
@@ -195,7 +200,7 @@ Player.prototype.update = function (deltaTime) {
 
 function checkCollides(position, size) {
     for (var i = 0; i < npcs.length; i++) {
-        if (boxCollides(position, size, npcs[i].position, size))
+        if (distCenters(position, size, npcs[i].position, size) <= 50)
             return true;
     }
     return false;
@@ -307,20 +312,75 @@ Drink.prototype.draw = function (ctx) {
     size = this.size
     x = this.position.x
     y = this.position.y
-    row = this.
-    col
     ctx.drawImage(drawing, x, y, size, size)
 }
 
-Drink.prototype.update = function (carried, player) {
-    if (carried === 1) {
-        this.carried = 1
-        this.position = player.position
+Drink.prototype.update = function (player) {
+    if (this.carried === 1) {
+        this.position.x = player.position.x + 10
+        this.position.y = player.position.y + 10
     }
-    if (carried === -1)
-        this.carried = 0
+}
+
+
+function create_drinks() {
+    randPos = Math.floor(Math.random() * 2)
+    for (var i = 0; i < desiredDrinks; i++)
+        drinks.push(new Drink(drink_options[randPos][0], drink_options[randPos][1], i))
+}
+
+/****************************************************************************************************/
+//Object handlers
+
+function dist(position1, position2) {
+    var a = position1.x - position2.x;
+    var b = position1.y - position2.y;
+
+    return Math.sqrt(a * a + b * b);
+}
+
+function distCenters(pos, size, pos2, size2) {
+    x1 = pos.x + (size / 2)
+    y1 = pos.y + (size / 2)
+
+    x2 = pos2.x + (size2 / 2)
+    y2 = pos2.y + (size2 / 2)
+
+    var a = x1 - x2
+    var b = y1 - y2
+    return Math.sqrt(a * a + b * b)
+}
+
+
+function near(position1, position2, dist) {
+    if (dist(position1, position2) <= 10)
+        return true
+    return false
+}
+
+
+function update_objects(player) {
+    for (var i = 0; i < drinks.length; i++) {
+        drinks[i].update(player)
+    }
+}
+
+function draw_objects(ctx) {
+    for (var i = 0; i < drinks.length; i++) {
+        drinks[i].draw(ctx)
+    }
+}
+
+function pickup(player) {
+    for (var i = 0; i < desiredDrinks; i++) {
+        if (distCenters(player.position, player.size, drinks[i].position, player.size) <= 50) {
+            drinks[i].carried = (drinks[i].carried + 1) % 2
+            console.log(drinks[0].name + " carried is : " + drinks[0].carried)
+        }
+    }
 }
 /****************************************************************************************************/
+//Input Handler
 function InputHandler(player) {
     document.addEventListener("keydown", event => {
         switch (event.keyCode) {
@@ -337,6 +397,7 @@ function InputHandler(player) {
                 player.moveDown();
                 break;
             case 32:
+                pickup(player);
                 break;
         }
     });
@@ -382,35 +443,14 @@ function contains(element, array) {
     return false
 }
 /****************************************************************************************************/
-//Collision FUNCTIONS
-/********************************
-Collision functions (collides and box collides) code borrowed from (and edited)  
-https://jlongster.com/Making-Sprite-based-Games-with-Canvas
-********************************/
-function collides(x, y, r, b, x2, y2, r2, b2) {
-    return !(r <= x2 || x > r2 ||
-        b <= y2 || y > b2);
+
+function drawPossiblePlaces(ctx) {
+    ctx.font = "15px Arial";
+    for (var i = 0; i < places.length; i++) {
+        var str = places[i][0] + " " + places[i][1]
+        ctx.fillText(str, places[i][0] * SIZE, places[i][1] * SIZE);
+    }
 }
-
-function boxCollides(pos, size, pos2, size2) {
-    return collides(pos.x, pos.y,
-        pos.x + size, pos.y + size,
-        pos2.x, pos2.y,
-        pos2.x + size2, pos2.y + size2);
-}
-
-
-//function checkCollisions(player) {
-//    for (var i = 0; i < npcs.length; i++) {
-//        var pos = npcs[i].position;
-//        var size = npcs[i].size;
-//        if (boxCollides(pos, size, player.position, player.size)) {
-//            console.log("collision between player and npc " + i)
-//        }
-//    }
-//}
-
-
 
 /****************************************************************************************************/
 
@@ -421,20 +461,19 @@ function start() {
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-
-
+    //TODO: add to file read function
+    for (var i = 0; i < 28; i++) {
+        placesHolder.push(0)
+    }
     //CREATE PLAYER
     //TODO: allow users to select character name, image, calculate tile size vs hardcoding 35
-    let player = new Player("lily", SIZE, 1, 1, 'img/djs.png', 3);
+    let player = new Player("lily", SIZE, 1, 1, 'img/djs.png', 1);
 
     let input = new InputHandler(player)
 
-    let drink1 = new Drink('img/martini.png', 'Martini', 1)
-    let drink2 = new Drink('img/cocktail.png', 'Vodka Cran', 2)
-
     let lastTime = 0;
 
-
+    create_drinks()
     create_npcs();
     //let test = new Npc()
     function gameLoop(timeStamp) {
@@ -443,11 +482,8 @@ function start() {
         ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         //_drawSquares(ctx)
 
-        drink1.update()
-        drink1.draw(ctx)
-
-        drink2.update()
-        drink2.draw(ctx)
+        update_objects(player)
+        draw_objects(ctx)
 
         update_npcs(deltaTime)
         draw_npcs(ctx)
@@ -456,7 +492,7 @@ function start() {
         player.draw(ctx);
 
         //checkCollisions(player)
-
+        drawPossiblePlaces(ctx)
         requestAnimationFrame(gameLoop);
 
     }
