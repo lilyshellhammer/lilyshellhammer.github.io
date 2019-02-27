@@ -5,7 +5,7 @@ const N_WIDTH = 15;
 const N_HEIGHT = 10;
 const SIZE = 75;
 
-const OBJ_SIZE = 40;
+const OBJ_SIZE = 50;
 //35 px by 35 px
 const DJS_IMG_SIZE = 120
 const PEOPLE_SIZE = 100
@@ -30,7 +30,6 @@ var usedNPCSprites = []
 var places = [
     [3, 1], [3, 2], [3, 3], [3, 4], [3, 5],
     [4, 1], [4, 2], [4, 3], [4, 4], [4, 5],
-    [4, 1], [4, 2], [4, 4], [4, 4], [4, 5],
     [5, 1], [5, 2], [5, 3], [5, 4], [5, 5],
     [6, 2], [6, 3], [6, 4], [6, 5], [7, 3],
     [7, 4], [7, 5], [8, 5]
@@ -39,33 +38,34 @@ var placesHolder = []
 
 var count = 0;
 var countNpc = 0;
-
+var objs = []
 var npcs = []
-var desired_npcs = 4;
+var desiredNpcs = 4;
 var drinks = []
-var drink_options = [['img/martini.png', 'Martini'], ['img/cocktail.png', 'VodkaCran']]
+var drinkOptions = [['img/martini.png', 'Martini'], ['img/cocktail.png', 'VodkaCran']]
 var desiredDrinks = 3;
+
+var winRect = {
+    x: 75,
+    y: 170,
+    xSize : 60,
+    ySize : 150
+}       
+
 /****************************************************************************************************/
 //NPC Functions
 
 function Npc() {
 
     //get random location, that is available
-    var randPos = 0;
-    while (1) {
-        randPos = Math.floor(Math.random() * 28)
-        if (placesHolder[randPos] !== 1)
-            break;
-    }
-    placesHolder[randPos] = 1
+    r = getFreePos()
     this.position = {
-        x: places[randPos][0] * SIZE,
-        y: places[randPos][1] * SIZE
+        x: r.x,
+        y: r.y
     }
-
     console.log(this.position)
     this.size = SIZE
-    this.crop_size = PEOPLE_SIZE
+    this.cropSize = PEOPLE_SIZE
 
     //Find random user
     var ranCol = -1
@@ -85,7 +85,7 @@ function Npc() {
 
     //create sprite!
     //Prototype: Sprite(src, position, size, speed, dir, once, characterRow, characterCol)
-    this.sprite = new Sprite('img/people.png', this.position, this.size, this.crop_size, this.speed, "npc_dance", false, 0, ranCol);
+    this.sprite = new Sprite('img/people.png', this.position, this.size, this.cropSize, this.speed, "npc_dance", false, 0, ranCol);
 
 }
 
@@ -94,13 +94,13 @@ Npc.prototype.draw = function (ctx) {
     this.sprite.draw(ctx)
 }
 
-function create_npcs() {
-    for (var i = 0; i < desired_npcs; i++) {
+function createNpcs() {
+    for (var i = 0; i < desiredNpcs; i++) {
         npcs.push(new Npc)
     }
 }
 
-function update_npcs(deltaTime) {
+function updateNpcs(deltaTime) {
     if (countNpc === 14) countNpc = 0;
     else countNpc = countNpc + 1;
 
@@ -110,7 +110,7 @@ function update_npcs(deltaTime) {
     }
 }
 
-function draw_npcs(ctx) {
+function drawNpcs(ctx) {
     for (var i = 0; i < npcs.length; i++) {
         npcs[i].draw(ctx)
     }
@@ -121,7 +121,7 @@ function draw_npcs(ctx) {
 function Player(name, size, x, y, imgSrc, characterCol) {
     this.name = name
     this.size = size
-    this.crop_size = DJS_IMG_SIZE
+    this.cropSize = DJS_IMG_SIZE
     this.position = {
         x: 20,
         y: GAME_HEIGHT / 2 - 55
@@ -136,7 +136,7 @@ function Player(name, size, x, y, imgSrc, characterCol) {
     // not dancing, just walking, false for repeat anim
     // row is pos start (Unused for now, possible if mult people on same row)
     // 0 is for colun start of character
-    this.sprite = new Sprite(this.imgSrc, this.position, this.size, this.crop_size, 600, "default", false, 0, characterCol)
+    this.sprite = new Sprite(this.imgSrc, this.position, this.size, this.cropSize, 600, "default", false, 0, characterCol)
 }
 
 Player.prototype.draw = function (ctx) {
@@ -215,13 +215,13 @@ function checkCollides(position, size) {
 Sprite function code borrowed from (and edited)  
 https://jlongster.com/Making-Sprite-based-Games-with-Canvas
 ********************************/
-function Sprite(src, position, size, crop_size, speed, type, once, characterRow, characterCol) {
+function Sprite(src, position, size, cropSize, speed, type, once, characterRow, characterCol) {
     this.position = {
         x: position.x,
         y: position.y
     }
     this.size = size;
-    this.crop_size = crop_size;
+    this.cropSize = cropSize;
     this.speed = {
         x: speed.x,
         y: speed.y
@@ -251,7 +251,7 @@ Sprite.prototype.update = function (dt, position, speed, count) {
 
 Sprite.prototype.draw = function (ctx) {
 
-    var crop_size = this.crop_size
+    var cropSize = this.cropSize
     //declare size of cropped image
     //get index of what frame we are in
     var idx = this._index
@@ -277,45 +277,63 @@ Sprite.prototype.draw = function (ctx) {
     //        return;
     //    }
 
-    xs = frame * crop_size
-    xs += this.characterRow * crop_size
-    ys = this.characterCol * crop_size
+    xs = frame * cropSize
+    xs += this.characterRow * cropSize
+    ys = this.characterCol * cropSize
 
     //make new drawing
     drawing = new Image();
     drawing.src = this.imgSrc;
 
     ctx.drawImage(drawing, xs, ys,
-        crop_size, crop_size,
+        cropSize, cropSize,
         this.position.x, this.position.y,
         this.size, this.size);
 
 }
 
 /****************************************************************************************************/
-//Drink Functions
+//Object Functions
 
-function Drink(src, name, num) {
+function Object(src, name, num, x, y) {
     this.carried = 0
-    this.position = {
-        x: (GAME_WIDTH - 150),
-        y: (60 + 70 * num)
+    this.name = name
+    if (this.name === 'Cocktail') {
+        this.position = {
+            x: (GAME_WIDTH - 150),
+            y: (60 + 70 * num)
+        }
+    } else {
+        r = getFreePos()
+        this.position = {
+            x: r.x,
+            y: r.y
+        }
     }
     this.imgSrc = src
     this.name = name
     this.size = OBJ_SIZE
+    this.cropSize = SIZE
+    this.clip = {
+        x: x,
+        y: y,
+    }
 }
 
-Drink.prototype.draw = function (ctx) {
+Object.prototype.draw = function (ctx) {
     drawing = new Image();
     drawing.src = this.imgSrc
     size = this.size
-    x = this.position.x
-    y = this.position.y
-    ctx.drawImage(drawing, x, y, size, size)
+    cropSize = this.cropSize
+    xs = this.clip.x * this.cropSize
+    ys = this.clip.y * this.cropSize
+    ctx.drawImage(drawing, xs, ys,
+        cropSize, cropSize,
+        this.position.x, this.position.y,
+        size, size);
 }
 
-Drink.prototype.update = function (player) {
+Object.prototype.update = function (player) {
     if (this.carried === 1) {
         this.position.x = player.position.x + 10
         this.position.y = player.position.y + 10
@@ -323,14 +341,51 @@ Drink.prototype.update = function (player) {
 }
 
 
-function create_drinks() {
+function createDrinks() {
     randPos = Math.floor(Math.random() * 2)
     for (var i = 0; i < desiredDrinks; i++)
-        drinks.push(new Drink(drink_options[randPos][0], drink_options[randPos][1], i))
+        objs.push(new Object('img/objects.png', 'Cocktail', i, randPos, 0))
 }
 
+function createMiscObjs() {
+    //add USB
+    objs.push(new Object('img/objects.png', 'USB', 0, 0, 1))
+    //add Record
+    objs.push(new Object('img/objects.png', 'Record', 1, 1, 1))
+}
+
+function updateObjects(player) {
+    for (var i = 0; i < objs.length; i++) {
+        objs[i].update(player)
+    }
+
+}
+
+function drawObjects(ctx) {
+    for (var i = 0; i < objs.length; i++) {
+        objs[i].draw(ctx)
+    }
+}
+
+
+function pickup(player) {
+    for (var i = 0; i < objs.length; i++) {
+        if (distCenters(player.position, player.size, objs[i].position, player.size) <= 50) {
+            objs[i].carried = (objs[i].carried + 1) % 2
+            //add update notification
+
+            if (objs[i].carried === 1) {
+                str = objs[i].name + " picked up!" + "<br>"
+                document.getElementById("notifications").innerHTML = str + document.getElementById("notifications").innerHTML
+            } else {
+                str = objs[i].name + " put down. <br>"
+                document.getElementById("notifications").innerHTML = str + document.getElementById("notifications").innerHTML
+            }
+        }
+    }
+}
 /****************************************************************************************************/
-//Object handlers
+//Dist handlers
 
 function dist(position1, position2) {
     var a = position1.x - position2.x;
@@ -358,27 +413,6 @@ function near(position1, position2, dist) {
     return false
 }
 
-
-function update_objects(player) {
-    for (var i = 0; i < drinks.length; i++) {
-        drinks[i].update(player)
-    }
-}
-
-function draw_objects(ctx) {
-    for (var i = 0; i < drinks.length; i++) {
-        drinks[i].draw(ctx)
-    }
-}
-
-function pickup(player) {
-    for (var i = 0; i < desiredDrinks; i++) {
-        if (distCenters(player.position, player.size, drinks[i].position, player.size) <= 50) {
-            drinks[i].carried = (drinks[i].carried + 1) % 2
-            console.log(drinks[0].name + " carried is : " + drinks[0].carried)
-        }
-    }
-}
 /****************************************************************************************************/
 //Input Handler
 function InputHandler(player) {
@@ -442,6 +476,48 @@ function contains(element, array) {
     }
     return false
 }
+
+function getFreePos() {
+    var x = 0;
+    while (1) {
+        var randPos = Math.floor(Math.random() * 23)
+        if (placesHolder[randPos] !== 1) {
+            x = randPos
+            break;
+        }
+    }
+    placesHolder[randPos] = 1
+    return {
+        x: places[x][0] * SIZE,
+        y: places[x][1] * SIZE
+    }
+
+}
+
+
+function getFreePosPlusTop() {
+    var x = 0;
+    while (1) {
+        var randPos = Math.floor(Math.random() * 23)
+        var checkX = places[randPos].x
+        var checkY = places[randPos].y + 1
+        var freeTop = 0
+        for (var i = 0; i < places.length; i++) {
+            if (contains([(places[randPos].x), (places[randPos].y + 1)], places))
+                freeTop = 1
+        }
+        if (placesHolder[randPos] !== 1 && freeTop !== 1) {
+            x = randPos
+            break;
+        }
+    }
+    placesHolder[randPos] = 1
+    return {
+        x: places[x][0] * SIZE,
+        y: places[x][1] * SIZE
+    }
+
+}
 /****************************************************************************************************/
 
 function _drawPossiblePlaces(ctx) {
@@ -465,6 +541,8 @@ function start() {
     for (var i = 0; i < 28; i++) {
         placesHolder.push(0)
     }
+
+
     //CREATE PLAYER
     //TODO: allow users to select character name, image, calculate tile size vs hardcoding 35
     let player = new Player("lily", SIZE, 1, 1, 'img/djs.png', 1);
@@ -473,8 +551,11 @@ function start() {
 
     let lastTime = 0;
 
-    create_drinks()
-    create_npcs();
+    createDrinks()
+    createMiscObjs()
+    createNpcs();
+
+    var countAlert = 0;
     //let test = new Npc()
     function gameLoop(timeStamp) {
         let deltaTime = timeStamp - lastTime;
@@ -482,11 +563,11 @@ function start() {
         ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         //_drawSquares(ctx)
 
-        update_objects(player)
-        draw_objects(ctx)
+        updateObjects(player)
+        drawObjects(ctx)
 
-        update_npcs(deltaTime)
-        draw_npcs(ctx)
+        updateNpcs(deltaTime)
+        drawNpcs(ctx)
 
         player.update(deltaTime);
         player.draw(ctx);
@@ -495,10 +576,19 @@ function start() {
         //_drawPossiblePlaces(ctx)
         requestAnimationFrame(gameLoop);
 
+        //checkWin(player)
+
+        ctx.fillStyle = "rgba(255, 20, 20,0.2)"
+        ctx.fillRect(winRect.x, winRect.y,  winRect.xSize,winRect.ySize);
+        checkWin()
+
     }
 
     requestAnimationFrame(gameLoop);
 
 }
 
-start();
+if (window.innerWidth < 1000 || window.innerHeight < 610) {
+    alert("Window too small! Please use a full screen greater than ~ 10 X 6 inches to play")
+} else
+    start();

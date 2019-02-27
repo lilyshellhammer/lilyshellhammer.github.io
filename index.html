@@ -10,14 +10,27 @@
 </head>
 
 <body>
-    <div id="gameSurround">
-        <canvas id="gameScreen" width="750" height="500"></canvas>
-        <!--   TODO: change button -->
-        <!--    <button id= "startbutton" type="button" onclick="start(); document.getElementById('startbutton').value = 'Pause';" value="Click to Start Game"></button>-->
-        <p id="notifications"></p>
+
+    <div class="wrapper">
+
+        <canvas id="gameScreen" width="750" height="500" align="center"></canvas>
+
+        <div class="controls">
+
+            <!--            <h2>controls</h2>-->
+
+            <!--            <button class="btn" onclick="1">Man</button>-->
+
+            <img class="cntrl" src="img/controls.png">
+            <div id="notifications">
+                <p id="bodyNotifications" class="notifications">ACTIVITY LOG: <br></p>
+            </div>
+        </div>
+
     </div>
-    <img src="img/brillo.jpg" alt="background">
-    <img id="player" src="img/noah.png" alt="playernoah">
+    <p class="missions">MISSION.</p>
+    <p class="missions"> Get your Record, USB, and Drink and bring it back to the RED DJ podium before your set begins!</p>
+    <img src="img/brillo.jpg" alt="background" style="display:none;">
 
 </body>
 
