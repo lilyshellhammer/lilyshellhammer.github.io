@@ -48,9 +48,11 @@ var desiredDrinks = 3;
 var winRect = {
     x: 75,
     y: 170,
-    xSize : 60,
-    ySize : 150
-}       
+    xSize: 60,
+    ySize: 150
+}
+
+var collected = []
 
 /****************************************************************************************************/
 //NPC Functions
@@ -318,6 +320,7 @@ function Object(src, name, num, x, y) {
         x: x,
         y: y,
     }
+    this.frozen = 0
 }
 
 Object.prototype.draw = function (ctx) {
@@ -357,8 +360,12 @@ function createMiscObjs() {
 function updateObjects(player) {
     for (var i = 0; i < objs.length; i++) {
         objs[i].update(player)
+        if (objs[i].frozen !== 1 && inside(objs[i].position, winRect)) {
+            objs[i].frozen = 1;
+            collected.push(objs[i].name)
+            console.log(collected)
+        }
     }
-
 }
 
 function drawObjects(ctx) {
@@ -371,21 +378,31 @@ function drawObjects(ctx) {
 function pickup(player) {
     for (var i = 0; i < objs.length; i++) {
         if (distCenters(player.position, player.size, objs[i].position, player.size) <= 50) {
-            objs[i].carried = (objs[i].carried + 1) % 2
+            if (!(objs[i].carried === 0 && objs[i].frozen === 1))
+                objs[i].carried = (objs[i].carried + 1) % 2
             //add update notification
 
-            if (objs[i].carried === 1) {
-                str = objs[i].name + " picked up!" + "<br>"
-                document.getElementById("notifications").innerHTML = str + document.getElementById("notifications").innerHTML
-            } else {
-                str = objs[i].name + " put down. <br>"
-                document.getElementById("notifications").innerHTML = str + document.getElementById("notifications").innerHTML
-            }
+            //            if (objs[i].carried === 1) {
+            //                str = objs[i].name + " picked up!" + "<br>"
+            //                document.getElementById("notifications").innerHTML = str + document.getElementById("notifications").innerHTML
+            //            } else {
+            //                str = objs[i].name + " put down. <br>"
+            //                document.getElementById("notifications").innerHTML = str + document.getElementById("notifications").innerHTML
+            //            }
         }
     }
 }
+
 /****************************************************************************************************/
 //Dist handlers
+
+
+function inside(position, rect) {
+    if ((position.x > rect.x && position.x < (rect.x + rect.xSize)))
+        if (position.y > rect.y && position.y < (rect.y + rect.ySize))
+            return true
+    return false;
+}
 
 function dist(position1, position2) {
     var a = position1.x - position2.x;
@@ -455,6 +472,21 @@ function InputHandler(player) {
 }
 /****************************************************************************************************/
 //MISC FUNCTIONS
+
+function checkWin(){
+    var cocktailCount = 0
+    if(collected.length > 2){
+        for(var i = 0; i < collected.length; i++){
+            if(collected[i] === "Cocktail"){
+                cocktailCount += 1
+             }
+        }
+        if(collected.length + 1 - cocktailCount === 3){
+            return true;
+        }
+    }
+    return false;
+}
 
 function _drawSquares(ctx) {
     for (var j = 0; j < 15; j++) {
@@ -551,6 +583,8 @@ function start() {
 
     let lastTime = 0;
 
+    var won = false
+    
     createDrinks()
     createMiscObjs()
     createNpcs();
@@ -563,6 +597,11 @@ function start() {
         ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         //_drawSquares(ctx)
 
+        //draw win rectangle
+        ctx.fillStyle = "rgba(255, 20, 20,0.1)"
+        ctx.fillRect(winRect.x, winRect.y, winRect.xSize, winRect.ySize);
+
+
         updateObjects(player)
         drawObjects(ctx)
 
@@ -574,17 +613,15 @@ function start() {
 
         //checkCollisions(player)
         //_drawPossiblePlaces(ctx)
-        requestAnimationFrame(gameLoop);
+        
+        if(!checkWin())
+            requestAnimationFrame(gameLoop);
 
-        //checkWin(player)
-
-        ctx.fillStyle = "rgba(255, 20, 20,0.2)"
-        ctx.fillRect(winRect.x, winRect.y,  winRect.xSize,winRect.ySize);
-        checkWin()
 
     }
 
     requestAnimationFrame(gameLoop);
+
 
 }
 
