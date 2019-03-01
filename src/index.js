@@ -40,10 +40,9 @@ var count = 0;
 var countNpc = 0;
 var objs = []
 var npcs = []
-var desiredNpcs = 4;
+var desiredNpcs = 5;
 var drinks = []
-var drinkOptions = [['img/martini.png', 'Martini'], ['img/cocktail.png', 'VodkaCran']]
-var desiredDrinks = 3;
+ var desiredDrinks = 3;
 
 var winRect = {
     x: 75,
@@ -53,6 +52,27 @@ var winRect = {
 }
 
 var collected = []
+
+
+
+
+//TODO:
+//Lights
+//Light function, for pickup when you are in the region
+//Player choose screen
+//Win screen
+//Level 1 banner
+//Timer
+
+//cookies?
+//leader board
+
+//Next level
+//what is reusable
+//records throwing
+//collision detection, points lower
+//health representation
+
 
 /****************************************************************************************************/
 //NPC Functions
@@ -347,15 +367,40 @@ Object.prototype.update = function (player) {
 function createDrinks() {
     randPos = Math.floor(Math.random() * 2)
     for (var i = 0; i < desiredDrinks; i++)
-        objs.push(new Object('img/objects.png', 'Cocktail', i, randPos, 0))
+        objs.push(new Object('img/objects.png', "Cocktail", i, randPos, 0))
 }
 
 function createMiscObjs() {
     //add USB
-    objs.push(new Object('img/objects.png', 'USB', 0, 0, 1))
+    objs.push(new Object('img/objects.png', "USB", 0, 0, 1))
     //add Record
-    objs.push(new Object('img/objects.png', 'Record', 1, 1, 1))
+    objs.push(new Object('img/objects.png', "Record", 1, 1, 1))
 }
+
+//function updateText() {
+//    var str = ""
+//    
+//    var sym = ""
+//    for (var i = 0; i < collected.length; i++) {
+//        switch (collected[i]) {
+//            case "Cocktail":
+//                sym = "Y"
+//                break;
+//            case "Record":
+//                sym = "O"
+//                break;
+//            case "USB":
+//                sym = "U"
+//                break;
+//
+//        }
+//        str = str + "[" + sym + "] "
+//    }
+//    for (var i = 0; i < 3 - collected.length; i++) {
+//        str = str + "[   ] "
+//    }
+//    document.getElementById("bodyNotifications").innerHTML = str
+//}
 
 function updateObjects(player) {
     for (var i = 0; i < objs.length; i++) {
@@ -363,7 +408,8 @@ function updateObjects(player) {
         if (objs[i].frozen !== 1 && inside(objs[i].position, winRect)) {
             objs[i].frozen = 1;
             collected.push(objs[i].name)
-            console.log(collected)
+
+//            updateText();
         }
     }
 }
@@ -473,15 +519,15 @@ function InputHandler(player) {
 /****************************************************************************************************/
 //MISC FUNCTIONS
 
-function checkWin(){
+function checkWin() {
     var cocktailCount = 0
-    if(collected.length > 2){
-        for(var i = 0; i < collected.length; i++){
-            if(collected[i] === "Cocktail"){
+    if (collected.length > 2) {
+        for (var i = 0; i < collected.length; i++) {
+            if (collected[i] === "Cocktail") {
                 cocktailCount += 1
-             }
+            }
         }
-        if(collected.length + 1 - cocktailCount === 3){
+        if (collected.length + 1 - cocktailCount === 3) {
             return true;
         }
     }
@@ -584,7 +630,7 @@ function start() {
     let lastTime = 0;
 
     var won = false
-    
+
     createDrinks()
     createMiscObjs()
     createNpcs();
@@ -613,8 +659,8 @@ function start() {
 
         //checkCollisions(player)
         //_drawPossiblePlaces(ctx)
-        
-        if(!checkWin())
+
+        if (!checkWin())
             requestAnimationFrame(gameLoop);
 
 
