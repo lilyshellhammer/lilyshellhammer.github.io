@@ -23,7 +23,7 @@ body {
 .wrapper {
     background-color: #292929;
     border-radius: 50px;
-/*    border: 5px solid #3c3c3c;*/
+    /*    border: 5px solid #3c3c3c;*/
     margin: 0 auto;
     padding-right: 200px;
     padding-left: 10px;
@@ -49,22 +49,45 @@ p {
 }
 
 
-.missions {
+#submit{
+    position:relative;
+    left:350px;
+    top:450px;
+    padding:10px;
+    background:white;
+
+}
+
+.menuOptions{
+    position: absolute;
+    margin: auto;
+}
+
+
+#username {
+    padding;5px;
+    position: relative;
+    left:-30px;
+    top:10px;
+    width: 150px;
+}
+
+#missions {
     margin: auto;
     margin-top: 20px;
     text-align: center;
     width: 670px;
     position: relative;
     left: -50px;
-    color:  #c0c1c3;
+    color: #c0c1c3;
     padding-bottom: 10px;
-    
+
 }
 
 .notifications {
     position: relative;
     top: -20px;
-/*    width: 150px;*/
+    /*    width: 150px;*/
     text-align: left;
     padding: 10px;
     font-size: 13px;

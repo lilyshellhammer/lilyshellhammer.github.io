@@ -1,12 +1,9 @@
 //GLOBALS
 const GAME_WIDTH = 750;
 const GAME_HEIGHT = 500;
-const N_WIDTH = 15;
-const N_HEIGHT = 10;
-const SIZE = 75;
 
+const SIZE = 75;
 const OBJ_SIZE = 50;
-//35 px by 35 px
 const DJS_IMG_SIZE = 120
 const PEOPLE_SIZE = 100
 
@@ -14,15 +11,12 @@ const PEOPLE_SIZE = 100
 
 //TO CONVERT TO TEXT FILE
 const NPC_COL = 15
-const MINX = 3
-const MAXX = 7
-const MINY = 2
-const MAXY = 5
 
 var playerUpDown = [0, 1, 0, 1]
 var playerLeft = [2, 3, 2, 4]
 var playerRight = [7, 6, 7, 5]
 var playerStill = [0, 0, 0, 0]
+var playerCelebrate = 8
 
 var usedNPCSprites = []
 
@@ -38,11 +32,13 @@ var placesHolder = []
 
 var count = 0;
 var countNpc = 0;
+var countEnemy = 0;
+var countDance = 0;
 var objs = []
 var npcs = []
 var desiredNpcs = 5;
 var drinks = []
- var desiredDrinks = 3;
+var desiredDrinks = 3;
 
 var winRect = {
     x: 75,
@@ -53,9 +49,13 @@ var winRect = {
 
 var collected = []
 
+//Globals for enemy level 2
+var records = []
+var enemyX = 700
+var enemyY = 75
 
-
-
+var lightsAdjusted = 0;
+var lost = false;
 //TODO:
 //Lights
 //Light function, for pickup when you are in the region
@@ -85,7 +85,7 @@ function Npc() {
         x: r.x,
         y: r.y
     }
-    console.log(this.position)
+
     this.size = SIZE
     this.cropSize = PEOPLE_SIZE
 
@@ -135,6 +135,45 @@ function updateNpcs(deltaTime) {
 function drawNpcs(ctx) {
     for (var i = 0; i < npcs.length; i++) {
         npcs[i].draw(ctx)
+    }
+}
+
+/****************************************************************************************************/
+//Enemy Functions
+
+function updateRecordEnemy(deltaTime) {
+    countEnemy = countEnemy + 1;
+
+    if (countEnemy % 150 === 0 && records.length < 7) {
+
+        records.push(new Object('img/objects.png', "Record", records.length, 1, 1))
+        records[records.length - 1].position.x = enemyX
+        records[records.length - 1].position.y = (enemyY + (Math.floor(Math.random() * 5) * SIZE))
+
+        records.push(new Object('img/objects.png', "Record", records.length, 1, 1))
+        records[records.length - 1].position.x = enemyX
+        records[records.length - 1].position.y = (enemyY + (Math.floor(Math.random() * 5) * SIZE))
+    }
+
+    if (countEnemy % 5 === 0) {
+        for (var i = 0; i < records.length; i++) {
+            if (records[i].position.x - 10 <= 0) {
+                records[i].position.x = enemyX
+                records[i].position.y = (enemyY + (Math.floor(Math.random() * 5) * SIZE))
+
+            } else
+                records[i].position = {
+                    x: records[i].position.x - 7, //(3 + countEnemy*(0.005)),
+                    y: records[i].position.y
+                }
+        }
+    }
+
+}
+
+function drawRecordEnemy(ctx) {
+    for (var i = 0; i < records.length; i++) {
+        records[i].draw(ctx)
     }
 }
 
@@ -189,20 +228,20 @@ Player.prototype.stopY = function () {
     this.speed.y = 0
 }
 
-Player.prototype.update = function (deltaTime) {
+Player.prototype.update = function (deltaTime, level) {
 
-    if (this.speed.x < 0 && this.position.x >= 10 && !checkCollides(this.position, this.size)) {
+    if (this.speed.x < 0 && this.position.x >= 10 && !checkCollides(level, this.position, this.size)) {
         this.position.x += this.speed.x
         if (checkCollides(this.position, this.size))
             this.position.x -= this.speed.x
 
-    } else if (this.speed.x > 0 && this.position.x <= GAME_WIDTH - 100 && !checkCollides(this.position, this.size)) {
+    } else if (this.speed.x > 0 && this.position.x <= GAME_WIDTH - 100 && !checkCollides(level, this.position, this.size)) {
         this.position.x += this.speed.x
         if (checkCollides(this.position, this.size))
             this.position.x -= this.speed.x
     }
 
-    if (this.speed.y < 0 && this.position.y >= 10 && !checkCollides(this.position, this.size)) {
+    if (this.speed.y < 0 && this.position.y >= 10 && !checkCollides(level, this.position, this.size)) {
         this.position.y += this.speed.y
         if (checkCollides(this.position, this.size))
             this.position.y -= this.speed.y
@@ -220,13 +259,24 @@ Player.prototype.update = function (deltaTime) {
 
 }
 
-function checkCollides(position, size) {
-    for (var i = 0; i < npcs.length; i++) {
-        if (distCenters(position, size, npcs[i].position, size) <= 50)
-            return true;
+function checkCollides(level, position, size) {
+    if (level === 1) {
+        for (var i = 0; i < npcs.length; i++) {
+            if (distCenters(position, size, npcs[i].position, size) <= 50)
+                return true;
+        }
+    } else if (level === 2) {
+        for (var i = 0; i < records.length; i++) {
+            if (distCenters(position, size, records[i].position, size) <= 30) {
+                lost = true;
+                return true;
+            }
+
+        }
     }
     return false;
 }
+
 
 
 /****************************************************************************************************/
@@ -377,30 +427,6 @@ function createMiscObjs() {
     objs.push(new Object('img/objects.png', "Record", 1, 1, 1))
 }
 
-//function updateText() {
-//    var str = ""
-//    
-//    var sym = ""
-//    for (var i = 0; i < collected.length; i++) {
-//        switch (collected[i]) {
-//            case "Cocktail":
-//                sym = "Y"
-//                break;
-//            case "Record":
-//                sym = "O"
-//                break;
-//            case "USB":
-//                sym = "U"
-//                break;
-//
-//        }
-//        str = str + "[" + sym + "] "
-//    }
-//    for (var i = 0; i < 3 - collected.length; i++) {
-//        str = str + "[   ] "
-//    }
-//    document.getElementById("bodyNotifications").innerHTML = str
-//}
 
 function updateObjects(player) {
     for (var i = 0; i < objs.length; i++) {
@@ -409,7 +435,7 @@ function updateObjects(player) {
             objs[i].frozen = 1;
             collected.push(objs[i].name)
 
-//            updateText();
+            //            updateText();
         }
     }
 }
@@ -422,20 +448,36 @@ function drawObjects(ctx) {
 
 
 function pickup(player) {
+    var x = 0
     for (var i = 0; i < objs.length; i++) {
         if (distCenters(player.position, player.size, objs[i].position, player.size) <= 50) {
-            if (!(objs[i].carried === 0 && objs[i].frozen === 1))
+            if (!(objs[i].carried === 0 && objs[i].frozen === 1)) {
                 objs[i].carried = (objs[i].carried + 1) % 2
-            //add update notification
-
-            //            if (objs[i].carried === 1) {
-            //                str = objs[i].name + " picked up!" + "<br>"
-            //                document.getElementById("notifications").innerHTML = str + document.getElementById("notifications").innerHTML
-            //            } else {
-            //                str = objs[i].name + " put down. <br>"
-            //                document.getElementById("notifications").innerHTML = str + document.getElementById("notifications").innerHTML
-            //            }
+                x = 1
+            }
         }
+    }
+    return x
+}
+
+/****************************************************************************************************/
+//Light Box
+
+function checkLights(player) {
+    lightsPos = {
+        x: 500,
+        y: 30
+    }
+    if (dist(player.position, lightsPos) <= 35) {
+        lightsAdjusted = (lightsAdjusted + 1) % 2
+    }
+}
+
+function drawLights(ctx) {
+    if (lightsAdjusted !== 0) {
+        drawing = new Image();
+        drawing.src = 'img/lights.png'
+        ctx.drawImage(drawing, 0, 0, GAME_WIDTH, GAME_HEIGHT);
     }
 }
 
@@ -494,7 +536,8 @@ function InputHandler(player) {
                 player.moveDown();
                 break;
             case 32:
-                pickup(player);
+                if (!pickup(player))
+                    checkLights(player);
                 break;
         }
     });
@@ -518,21 +561,6 @@ function InputHandler(player) {
 }
 /****************************************************************************************************/
 //MISC FUNCTIONS
-
-function checkWin() {
-    var cocktailCount = 0
-    if (collected.length > 2) {
-        for (var i = 0; i < collected.length; i++) {
-            if (collected[i] === "Cocktail") {
-                cocktailCount += 1
-            }
-        }
-        if (collected.length + 1 - cocktailCount === 3) {
-            return true;
-        }
-    }
-    return false;
-}
 
 function _drawSquares(ctx) {
     for (var j = 0; j < 15; j++) {
@@ -596,7 +624,6 @@ function getFreePosPlusTop() {
     }
 
 }
-/****************************************************************************************************/
 
 function _drawPossiblePlaces(ctx) {
     ctx.font = "15px Arial";
@@ -605,31 +632,176 @@ function _drawPossiblePlaces(ctx) {
         ctx.fillText(str, places[i][0] * SIZE, places[i][1] * SIZE);
     }
 }
+/****************************************************************************************************/
+function checkWin2(player) {
+    winPos2 = {
+        x: 655,
+        y: 450
+    }
+    if (lightsAdjusted === 1 && dist(player.position, winPos2) < 60)
+        return true;
+    return false;
+}
 
+
+function checkWin1() {
+    var cocktailCount = 0
+    if (collected.length > 2) {
+        for (var i = 0; i < collected.length; i++) {
+            if (collected[i] === "Cocktail") {
+                cocktailCount += 1
+            }
+        }
+        if (collected.length + 1 - cocktailCount === 3) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function drawDance(player, ctx) {
+    countDance += 1
+    var cropSize = player.sprite.cropSize
+
+    var xs = 8 * cropSize
+    xs += player.sprite.characterRow * cropSize
+    var ys = player.sprite.characterCol * cropSize
+
+
+    var x = player.position.x
+    var y = player.position.y + (10 * (countDance % 2))
+    
+    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+    //make new drawing
+    drawing = new Image();
+    drawing.src = player.imgSrc;
+
+    ctx.drawImage(drawing, xs, ys,
+        cropSize, cropSize,
+        x, y,
+        player.size, player.size);
+}
+
+function animateWin(player, ctx) {
+    drawDance()
+    while (count < 5) {
+        setTimeout(drawDance, 2000)
+
+    }
+
+}
 /****************************************************************************************************/
 
-//BEGIN GAME
-function start() {
-    //GET CANVAS, CTX
+//function menu() {
+//    
+//    let canvas = document.getElementById("gameScreen");
+//    let ctx = canvas.getContext("2d");
+//    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+//    
+//    
+//    ctx.fillStyle = "rgba(0, 0, 0 ,0.5)"
+//    ctx.fillRect(0 , 0, GAME_WIDTH, GAME_HEIGHT);
+//    
+//    drawing = new Image();
+//    drawing.src = 'img/djs.png'
+//    var startx = (GAME_WIDTH - GAME_HEIGHT) / 2;
+//    var starty = 40;
+//    
+//    for (var j = 0; j < 3; j++) {
+//        for (var i = 0; i < 3; i++) {
+//            var x = (startx + i*2*SIZE)
+//            var y = 2*SIZE*j + starty
+//            ctx.fillStyle = "#767676"
+//            ctx.fillRect(x , y, SIZE*1.6, SIZE*1.6);
+//            
+//            var xs = (i*j + j)*SIZE
+//            ctx.drawImage(drawing, xs, 0,
+//                SIZE, SIZE,x,y, SIZE*1.6,SIZE*1.6)
+//        }
+//    }
+//    
+//}
+
+
+//function display(level){
+//    let canvas = document.getElementById("gameScreen");
+//    let ctx = canvas.getContext("2d");
+//    //ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+//    ctx.fillStyle = "rgba(0, 0, 0,0.4)"
+//    ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+//    drawing = new Image();
+//    drawing.src = "img/levels.png"
+//    ctx.drawImage(drawing, 0, 0,
+//        drawing.width, drawing.height);
+//}`
+
+
+function level2(player, input) {
+    //GET CANVAS, CTX, SHOW MISSION
     let canvas = document.getElementById("gameScreen");
     let ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    document.getElementById("missions").innerHTML = "Adjust the lights and levels and then head to the exit! Don't get hit!"
 
-    //TODO: add to file read function
-    for (var i = 0; i < 28; i++) {
-        placesHolder.push(0)
+
+    let lastTime = 0;
+    lost = false
+    lightsAdjusted = 0;
+    var countAlert = 0;
+    var level = 2;
+
+    records.push(new Object('img/objects.png', "Record", records.length, 1, 1))
+    records[records.length - 1].position.x = enemyX
+    records[records.length - 1].position.y = (enemyY + (Math.floor(Math.random() * 5) * SIZE))
+
+    function gameLoop2(timeStamp) {
+        let deltaTime = timeStamp - lastTime;
+        lastTime = timeStamp;
+        ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+
+        ctx.font = "20px Arial";
+        ctx.fillText("EXIT", 655, 450);
+
+        player.update(deltaTime, level);
+        player.draw(ctx);
+
+        updateRecordEnemy(deltaTime)
+        drawRecordEnemy(ctx)
+
+        drawLights(ctx);
+
+        if (!checkWin2(player) && lost === false)
+            requestAnimationFrame(gameLoop2);
+        else {
+            if (lost === true)
+                alert("LOST level 2!")
+            else
+                animateWin(player);
+        }
+
+
     }
 
+    requestAnimationFrame(gameLoop2);
+}
+
+
+function level1(player, input) {
+    ///GET CANVAS, CTX, SHOW MISSION
+    let canvas = document.getElementById("gameScreen");
+    let ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    document.getElementById("missions").innerHTML = "Get your RECORD, USB, and DRINK and bring it back to the RED DJ PODIUM before your set begins!"
 
     //CREATE PLAYER
     //TODO: allow users to select character name, image, calculate tile size vs hardcoding 35
-    let player = new Player("lily", SIZE, 1, 1, 'img/djs.png', 1);
-
-    let input = new InputHandler(player)
-
     let lastTime = 0;
 
     var won = false
+
+    let level = 1;
 
     createDrinks()
     createMiscObjs()
@@ -654,24 +826,32 @@ function start() {
         updateNpcs(deltaTime)
         drawNpcs(ctx)
 
-        player.update(deltaTime);
+        player.update(deltaTime, level);
         player.draw(ctx);
 
         //checkCollisions(player)
         //_drawPossiblePlaces(ctx)
 
-        if (!checkWin())
-            requestAnimationFrame(gameLoop);
+                if (!checkWin1(level))
+                    requestAnimationFrame(gameLoop);
+                else {
+                    animateWin(player, ctx);
+                    level2(player, input)
+                }
 
 
     }
 
     requestAnimationFrame(gameLoop);
-
-
 }
 
 if (window.innerWidth < 1000 || window.innerHeight < 610) {
     alert("Window too small! Please use a full screen greater than ~ 10 X 6 inches to play")
-} else
-    start();
+} else {
+    var player = new Player("lily", SIZE, 1, 1, 'img/djs.png', 1);
+    var input = new InputHandler(player)
+
+    level1(player, input)
+
+}
+//start1();

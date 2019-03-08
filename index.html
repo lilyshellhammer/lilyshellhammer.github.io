@@ -10,9 +10,19 @@
 </head>
 
 <body>
-    <p class="missions"> Get your RECORD, USB, and DRINK and bring it back to the RED DJ PODIUM before your set begins!</p>
-    
+    <!--   onload="checkCookies()"-->
+    <p id="missions">Enter your name and choose your character!</p>
+
     <div class="wrapper">
+        
+<!--
+        <div class="menuOptions">   
+            <p id="chooseDJtext">Enter your name and choose your player!</p>
+            Enter Name;
+            <input type="text" id="username" name="username" value="">
+            <input type="submit" id="submit" value="Submit">
+        </div>
+-->
 
         <canvas id="gameScreen" width="750" height="500" align="center"></canvas>
 
@@ -29,10 +39,11 @@
         </div>
 
     </div>
+
     <img src="img/brillo.jpg" alt="background" style="display:none;">
 
 </body>
 
 </html>
-<script src="stats/floorplans.js"></script>
+<script src="src/menu.js"></script>
 <script src="src/index.js"></script>
