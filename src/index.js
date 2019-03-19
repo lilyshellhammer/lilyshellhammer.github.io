@@ -736,6 +736,26 @@ function animateWin(player, ctx) {
 //        drawing.width, drawing.height);
 //}`
 
+function start(){
+    if (window.innerWidth < 1000 || window.innerHeight < 610) {
+    alert("Window too small! Please use a full screen greater than ~ 10 X 6 inches to play")
+    } else {
+        console.log("inside start!")
+//        v = document.getElementById("game")
+//        p = document.getElementById("menu")
+//    
+//        v.style.display = "block";
+//        p.style.display = "none";
+       // let name = document.getElementById("name").value;
+        var player = new Player("player", SIZE, 1, 1, 'img/djs.png', (2-1));
+        var input = new InputHandler(player)
+        
+        level1(player, input, level2);
+//        level2(player, input);
+
+    }
+}
+
 
 function level2(player, input) {
     //GET CANVAS, CTX, SHOW MISSION
@@ -776,9 +796,10 @@ function level2(player, input) {
             requestAnimationFrame(gameLoop2);
         else {
             if (lost === true)
-                alert("LOST level 2!")
+                document.getElementById("missions").innerHTML = "YOU LOST"
             else
-                animateWin(player);
+                console.log("TODO put animate win!")
+//                animateWin(player);
         }
 
 
@@ -788,7 +809,7 @@ function level2(player, input) {
 }
 
 
-function level1(player, input) {
+function level1(player, input, callback) {
     ///GET CANVAS, CTX, SHOW MISSION
     let canvas = document.getElementById("gameScreen");
     let ctx = canvas.getContext("2d");
@@ -835,8 +856,9 @@ function level1(player, input) {
                 if (!checkWin1(level))
                     requestAnimationFrame(gameLoop);
                 else {
-                    animateWin(player, ctx);
-                    level2(player, input)
+                    console.log("TODO animate win!")
+//                    animateWin(player, ctx);
+                    callback(player, input)
                 }
 
 
@@ -845,13 +867,61 @@ function level1(player, input) {
     requestAnimationFrame(gameLoop);
 }
 
-if (window.innerWidth < 1000 || window.innerHeight < 610) {
-    alert("Window too small! Please use a full screen greater than ~ 10 X 6 inches to play")
-} else {
-    var player = new Player("lily", SIZE, 1, 1, 'img/djs.png', 1);
-    var input = new InputHandler(player)
 
-    level1(player, input)
 
-}
-//start1();
+start()
+//////////////////
+
+
+
+
+
+
+
+
+//var user;
+//
+//////////////////////////////////
+//function checkEntry(name){
+//        return true;
+//}
+//////////////////////////////////
+//function validate() {
+//    if(name.value != ""){
+//        if(checkEntry(name))
+//            document.getElementById("submit").disabled = false;  
+//            console.log("time to create player")
+//            //player = new Player(name, )
+//    }
+//
+//    else console.log("time to display error")    
+//}
+//
+//
+//var slideIndex = 1;
+//showSlides(slideIndex);
+//
+//////////////////////////////////
+//function plusSlides(n) {
+//  showSlides(slideIndex += n);
+//}
+//
+//////////////////////////////////
+//function currentSlide(n) {
+//  showSlides(slideIndex = n);
+//}
+//
+//function showSlides(n) {
+//  var i;
+//  var slides = document.getElementsByClassName("mySlides");
+//    
+//  if (n > slides.length) {slideIndex = 1} 
+//    
+//  if (n < 1) {slideIndex = slides.length}
+//    
+//  for (i = 0; i < slides.length; i++) {
+//      slides[i].style.display = "none"; 
+//  }
+//    
+//  slides[slideIndex-1].style.display = "block"; 
+//}

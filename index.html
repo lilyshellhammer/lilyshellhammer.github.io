@@ -15,15 +15,8 @@
 
     <div class="wrapper">
         
-<!--
-        <div class="menuOptions">   
-            <p id="chooseDJtext">Enter your name and choose your player!</p>
-            Enter Name;
-            <input type="text" id="username" name="username" value="">
-            <input type="submit" id="submit" value="Submit">
-        </div>
--->
-
+    
+       <div id="game" >
         <canvas id="gameScreen" width="750" height="500" align="center"></canvas>
 
         <div class="controls">
@@ -37,6 +30,7 @@
                 <p id="bodyNotifications" class="notifications">Press your arrow keys to move around the board. Hit spacebar to interact with the scene or pick up objects!</p>
             </div>
         </div>
+        </div>
 
     </div>
 
@@ -45,5 +39,55 @@
 </body>
 
 </html>
-<script src="src/menu.js"></script>
 <script src="src/index.js"></script>
+
+
+<script>
+//<div id="menu">
+//        <div class="slideshow-container">
+//
+//            <!-- Full-width images with number and caption text -->
+//            <div class="mySlides">
+//                <div class="numdj" value="1"></div>
+//                <img src="img/noah.png" class="pics">
+//                <div class="text">dj noah</div>
+//            </div>
+//
+//            <div class="mySlides">
+//                <div class="numdj" value="2"></div>
+//                <img src="img/stone.png" class="pics">
+//                <div class="text">dj gladstone delux</div>
+//            </div>
+//
+//            <div class="mySlides">
+//                <div class="numdj" value="2"></div>
+//                <img src="img/cj.png" class="pics">
+//                <div class="text">dj kid koop</div>
+//            </div>
+//
+//            <div class="mySlides">
+//                <div class="numdj" value="2"></div>
+//                <img src="img/brendan.png" class="pics">
+//                <div class="text">dj brendan</div>
+//            </div>
+//
+//            <div class="mySlides">
+//                <div class="numdj" value="2"></div>
+//                <img src="img/pat.png" class="pics">
+//                <div class="text">dj pat</div>
+//            </div>
+//
+//
+//            <!-- Next and previous buttons -->
+//            <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+//            <a class="next" onclick="plusSlides(1)">&#10095;</a>
+//        </div>
+//        <br>
+//        <form class="form-content">
+//
+//<!--            <input type="text" id="name" placeholder="Enter Name" name="name" required onchange="validate()">-->
+//            <button id="submit" onclick="start()" >Start</button>
+//
+//        </form>
+//    </div>
+</script>
