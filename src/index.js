@@ -7,8 +7,8 @@ const OBJ_SIZE = 50;
 const DJS_IMG_SIZE = 120
 const PEOPLE_SIZE = 100
 
-
-
+var image_index = 0
+var game_paused = 0;
 //TO CONVERT TO TEXT FILE
 const NPC_COL = 15
 
@@ -47,8 +47,19 @@ var winRect = {
     ySize: 150
 }
 
-var collected = []
+var dj_urls = ['img/djs/gladstone.png',
+              'img/djs/noah.png',
+              'img/djs/cj.png',
+              'img/djs/brendan.png',
+              'img/djs/pat.png',
+              'img/djs/elias.png',
+              'img/djs/michael.png',
+              'img/djs/ryan.png',
+              'img/djs/brad.png',
+             ]
 
+var collected = []
+var npc_names = ["Veronica", "Lily", "George", "Christine", "Morgan", "Kirby", "Caitlyn", "Vera", "Jorge", "Irene", "Richie", "Jay", "Jisun", "Cassie", "Stephanie", "Liam", "Justin"]
 //Globals for enemy level 2
 var records = []
 var enemyX = 700
@@ -56,6 +67,8 @@ var enemyY = 75
 
 var lightsAdjusted = 0;
 var lost = false;
+
+var name = 'default name';
 //TODO:
 //Lights
 //Light function, for pickup when you are in the region
@@ -92,8 +105,8 @@ function Npc() {
     //Find random user
     var ranCol = -1
     do {
-        ranCol = Math.floor(Math.random() * 15)
-        if (npcs.length >= 15)
+        ranCol = Math.floor(Math.random() * 17)
+        if (npcs.length >= 17)
             break;
     } while (usedNPCSprites.includes(ranCol))
     //append used character
@@ -107,7 +120,7 @@ function Npc() {
 
     //create sprite!
     //Prototype: Sprite(src, position, size, speed, dir, once, characterRow, characterCol)
-    this.sprite = new Sprite('img/people.png', this.position, this.size, this.cropSize, this.speed, "npc_dance", false, 0, ranCol);
+    this.sprite = new Sprite(npc_names[ranCol], 'img/people_names.png', this.position, this.size, this.cropSize, this.speed, "npc_dance", false, 0, ranCol);
 
 }
 
@@ -197,7 +210,7 @@ function Player(name, size, x, y, imgSrc, characterCol) {
     // not dancing, just walking, false for repeat anim
     // row is pos start (Unused for now, possible if mult people on same row)
     // 0 is for colun start of character
-    this.sprite = new Sprite(this.imgSrc, this.position, this.size, this.cropSize, 600, "default", false, 0, characterCol)
+    this.sprite = new Sprite(this.name, this.imgSrc, this.position, this.size, this.cropSize, 600, "default", false, 0, characterCol)
 }
 
 Player.prototype.draw = function (ctx) {
@@ -278,16 +291,16 @@ function checkCollides(level, position, size) {
 }
 
 
-
 /****************************************************************************************************/
 //Sprite Functions
 
 
 /********************************
-Sprite function code borrowed from (and edited)  
+Sprite function code borrowed from (and edited)
 https://jlongster.com/Making-Sprite-based-Games-with-Canvas
 ********************************/
-function Sprite(src, position, size, cropSize, speed, type, once, characterRow, characterCol) {
+function Sprite(name, src, position, size, cropSize, speed, type, once, characterRow, characterCol) {
+    this.name = name;
     this.position = {
         x: position.x,
         y: position.y
@@ -362,6 +375,9 @@ Sprite.prototype.draw = function (ctx) {
         this.position.x, this.position.y,
         this.size, this.size);
 
+    ctx.font = "10px Courier";
+    ctx.fillStyle = "#dedede";
+    ctx.fillText(this.name, this.position.x + 10, this.position.y - 5);
 }
 
 /****************************************************************************************************/
@@ -670,7 +686,7 @@ function drawDance(player, ctx) {
 
     var x = player.position.x
     var y = player.position.y + (10 * (countDance % 2))
-    
+
     ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
     //make new drawing
@@ -693,57 +709,103 @@ function animateWin(player, ctx) {
 }
 /****************************************************************************************************/
 
-//function menu() {
-//    
+
+
+// Menu and image selection functions
+/****************************************************************************************************/
+$("#next_image").click(function () {
+    image_index = (image_index + 1) % 8;
+
+    document.getElementById('djs').src = dj_urls[image_index];
+
+
+});
+
+$("#prev_image").click(function () {
+    if (image_index == 0)
+        image_index = 8;
+    else image_index--;
+
+    document.getElementById('djs').src = dj_urls[image_index];
+});
+
+
+$("#submit").click(function () {
+    if ($('#username').val() != '') {
+        name = $('#username').val();
+        menu();
+    } else {
+        $('#chooseDJtext').text('Enter a username to continue!     ')
+    }
+});
+
+
+function menu() {
+    
+    $('.gameWrapper').removeClass('hidden');
+    $('.menuOptions').addClass('hidden');
+    $('#missions').removeClass('hidden');
+
+    var player = new Player('', SIZE, 1, 1, 'img/djs_all.png', image_index);
+    var input = new InputHandler(player)
+
+    $('#username_display').text(name);
+    banner = 1;
+    game_paused = 200;
+    level1(player, input)
+}
+
+
+//function banner(type) {
 //    let canvas = document.getElementById("gameScreen");
 //    let ctx = canvas.getContext("2d");
-//    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-//    
-//    
-//    ctx.fillStyle = "rgba(0, 0, 0 ,0.5)"
-//    ctx.fillRect(0 , 0, GAME_WIDTH, GAME_HEIGHT);
-//    
-//    drawing = new Image();
-//    drawing.src = 'img/djs.png'
-//    var startx = (GAME_WIDTH - GAME_HEIGHT) / 2;
-//    var starty = 40;
-//    
-//    for (var j = 0; j < 3; j++) {
-//        for (var i = 0; i < 3; i++) {
-//            var x = (startx + i*2*SIZE)
-//            var y = 2*SIZE*j + starty
-//            ctx.fillStyle = "#767676"
-//            ctx.fillRect(x , y, SIZE*1.6, SIZE*1.6);
-//            
-//            var xs = (i*j + j)*SIZE
-//            ctx.drawImage(drawing, xs, 0,
-//                SIZE, SIZE,x,y, SIZE*1.6,SIZE*1.6)
-//        }
+//
+//    if (type === 'level1') {
+//        drawing = new Image();
+//        drawing.src = "img/banners/level1.png"
+//        ctx.drawImage(drawing, 0, 0)
+//        ctx.drawImage(drawing, 0, 0)
+//        ctx.drawImage(drawing, 0, 0)
+//        
+//        game_paused = 200;
+//
+//    } else if (type === 'level2') {
+//        drawing = new Image();
+//        drawing.src = "img/banners/level2.png"
+//        ctx.drawImage(drawing, 60, 150)
+//        game_paused = 200;
+//
+//    } else if (type === 'winner') {
+//        drawing = new Image();
+//        drawing.src = "img/banners/winner.png"
+//        ctx.drawImage(drawing, 60, 150)
+//        game_paused = 200;
 //    }
-//    
+//}
+//
+//
+//function gameOver() {
+//    let canvas = document.getElementById("gameScreen");
+//    let ctx = canvas.getContext("2d");
+//    drawing = new Image();
+//    drawing.src = "img/banners/gameover.png"
+//    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+//    ctx.drawImage(drawing, 60, 150)
+//    game_paused = 1000;
+//
 //}
 
-
-//function display(level){
-//    let canvas = document.getElementById("gameScreen");
-//    let ctx = canvas.getContext("2d");
-//    //ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-//    ctx.fillStyle = "rgba(0, 0, 0,0.4)"
-//    ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-//    drawing = new Image();
-//    drawing.src = "img/levels.png"
-//    ctx.drawImage(drawing, 0, 0,
-//        drawing.width, drawing.height);
-//}`
-
+// Level functions
+/****************************************************************************************************/
 
 function level2(player, input) {
     //GET CANVAS, CTX, SHOW MISSION
     let canvas = document.getElementById("gameScreen");
     let ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+//    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
     document.getElementById("missions").innerHTML = "Adjust the lights and levels and then head to the exit! Don't get hit!"
 
+    document.getElementById("bodyNotifications").innerHTML = "<br> Use ARROWS to move! <br><br>Use SPACE to turn on the lights! <br> Dont get hit!"
 
     let lastTime = 0;
     lost = false
@@ -760,25 +822,50 @@ function level2(player, input) {
         lastTime = timeStamp;
         ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
+//        console.log(game_paused);
+        if (game_paused <= 0) {
+            ctx.font = "20px Arial";
+            ctx.fillText("EXIT", 655, 450);
 
-        ctx.font = "20px Arial";
-        ctx.fillText("EXIT", 655, 450);
+            player.update(deltaTime, level);
+            player.draw(ctx);
 
-        player.update(deltaTime, level);
-        player.draw(ctx);
-
-        updateRecordEnemy(deltaTime)
-        drawRecordEnemy(ctx)
-
-        drawLights(ctx);
+            updateRecordEnemy(deltaTime)
+            drawRecordEnemy(ctx)
+            
+            drawLights(ctx);
+        } else {
+            if(banner === 0){
+                drawing = new Image();
+                drawing.src = "img/banners/winner.png"
+                ctx.drawImage(drawing, 150, 160)
+            }
+            else if(banner === 2){
+                drawing = new Image();
+                drawing.src = "img/banners/level2.png"
+                ctx.drawImage(drawing, 150, 160)
+            }
+            else if(banner === 4){
+                drawing = new Image();
+                drawing.src = "img/banners/gameover.png"
+                ctx.drawImage(drawing,150, 160)
+            }
+            game_paused--
+        }
 
         if (!checkWin2(player) && lost === false)
             requestAnimationFrame(gameLoop2);
         else {
-            if (lost === true)
-                alert("LOST level 2!")
-            else
-                animateWin(player);
+            if (lost === true){
+               banner = 4
+                game_paused = 200;
+            }
+            else{
+                banner = 0
+                game_paused = 200;
+            }
+            
+            
         }
 
 
@@ -792,7 +879,7 @@ function level1(player, input) {
     ///GET CANVAS, CTX, SHOW MISSION
     let canvas = document.getElementById("gameScreen");
     let ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+//    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
     document.getElementById("missions").innerHTML = "Get your RECORD, USB, and DRINK and bring it back to the RED DJ PODIUM before your set begins!"
 
     //CREATE PLAYER
@@ -812,32 +899,44 @@ function level1(player, input) {
     function gameLoop(timeStamp) {
         let deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
-        ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        //_drawSquares(ctx)
+        
 
-        //draw win rectangle
-        ctx.fillStyle = "rgba(255, 20, 20,0.1)"
-        ctx.fillRect(winRect.x, winRect.y, winRect.xSize, winRect.ySize);
+        if (game_paused <= 0) {
+            ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+            //_drawSquares(ctx)
+
+            //draw win rectangle
+            ctx.fillStyle = "rgba(255, 20, 20,0.1)"
+            ctx.fillRect(winRect.x, winRect.y, winRect.xSize, winRect.ySize);
 
 
-        updateObjects(player)
-        drawObjects(ctx)
+            updateObjects(player)
+            drawObjects(ctx)
 
-        updateNpcs(deltaTime)
-        drawNpcs(ctx)
+            updateNpcs(deltaTime)
+            drawNpcs(ctx)
 
-        player.update(deltaTime, level);
-        player.draw(ctx);
-
-        //checkCollisions(player)
-        //_drawPossiblePlaces(ctx)
-
-                if (!checkWin1(level))
-                    requestAnimationFrame(gameLoop);
-                else {
-                    animateWin(player, ctx);
-                    level2(player, input)
-                }
+            player.update(deltaTime, level);
+            player.draw(ctx);
+            
+            //checkCollisions(player)
+            //_drawPossiblePlaces(ctx)
+        } else {
+            if(banner === 1){
+                drawing = new Image();
+                drawing.src = "img/banners/level1.png"
+                ctx.drawImage(drawing, 150, 160)
+            }
+            game_paused--;
+        }
+        
+        if (!checkWin1(level))
+            requestAnimationFrame(gameLoop);
+        else {
+            banner = 2
+            game_paused = 200;
+            level2(player, input)
+        }
 
 
     }
@@ -847,11 +946,4 @@ function level1(player, input) {
 
 if (window.innerWidth < 1000 || window.innerHeight < 610) {
     alert("Window too small! Please use a full screen greater than ~ 10 X 6 inches to play")
-} else {
-    var player = new Player("lily", SIZE, 1, 1, 'img/djs.png', 1);
-    var input = new InputHandler(player)
-
-    level1(player, input)
-
 }
-//start1();

@@ -11,30 +11,39 @@
 
 <body>
     <!--   onload="checkCookies()"-->
-    <p id="missions">Enter your name and choose your character!</p>
+    <p id="missions" class="hidden">Enter your name and choose your character!</p>
 
     <div class="wrapper">
-        
-<!--
-        <div class="menuOptions">   
-            <p id="chooseDJtext">Enter your name and choose your player!</p>
-            Enter Name;
-            <input type="text" id="username" name="username" value="">
-            <input type="submit" id="submit" value="Submit">
+
+        <div class="menuOptions">
+            <h2 id="chooseDJtext">Enter your name and choose your player!</h2>
+            <input type="text" id="username" name="username" placeholder="Your name..">
+
+            <div class="dj_wrapper">
+                <button id="next_image" class="image_click">&lt</button>
+
+                <img src="img/djs/gladstone.png" id="djs" >
+
+                <button id="prev_image" class="image_click">&gt</button>
+            </div>
+            <button id="submit">START GAME</button>
         </div>
--->
 
-        <canvas id="gameScreen" width="750" height="500" align="center"></canvas>
+        <div class="hidden gameWrapper">
+            <canvas id="gameScreen" width="750" height="500" align="center"></canvas>
 
-        <div class="controls">
+            <div class="controls">
 
-            <!--            <h2>controls</h2>-->
+                <!--            <h2>controls</h2>-->
 
-            <!--            <button class="btn" onclick="1">Man</button>-->
+                <!--            <button class="btn" onclick="1">Man</button>-->
 
-            <img class="cntrl" src="img/controls.png">
-            <div id="notifications">
-                <p id="bodyNotifications" class="notifications">Press your arrow keys to move around the board. Hit spacebar to interact with the scene or pick up objects!</p>
+                <img class="cntrl" src="img/controls.png">
+                <div id="notifications">
+                    <p id="bodyNotifications" class="notifications">Use ARROWS to move! <br>
+                    Use SPACE to pick up!</p>
+                </div>
+                <h2 id="username_display"></h2>
             </div>
         </div>
 
@@ -42,8 +51,8 @@
 
     <img src="img/brillo.jpg" alt="background" style="display:none;">
 
-</body>
 
-</html>
+</body></html>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="src/menu.js"></script>
 <script src="src/index.js"></script>
