@@ -947,3 +947,4 @@ function level1(player, input) {
 if (window.innerWidth < 1000 || window.innerHeight < 610) {
     alert("Window too small! Please use a full screen greater than ~ 10 X 6 inches to play")
 }
+
