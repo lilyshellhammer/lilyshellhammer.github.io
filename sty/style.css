@@ -217,6 +217,14 @@ head {
     background-color: white;
 }
 
+.restart-game {
+    padding: 20px;
+    color: grey;
+    background: #333;
+    width: 200px;
+    margin: auto;
+    box-shadow: 5px 5px #555;
+}
 
 
 /*

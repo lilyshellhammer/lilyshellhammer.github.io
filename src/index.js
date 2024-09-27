@@ -20,7 +20,6 @@ var playerCelebrate = 8
 
 var usedNPCSprites = []
 
-
 var places = [
     [3, 1], [3, 2], [3, 3], [3, 4], [3, 5],
     [4, 1], [4, 2], [4, 3], [4, 4], [4, 5],
@@ -745,6 +744,7 @@ function menu() {
     $('.gameWrapper').removeClass('hidden');
     $('.menuOptions').addClass('hidden');
     $('#missions').removeClass('hidden');
+    $('.restart-game').removeClass('hidden');
 
     var player = new Player('', SIZE, 1, 1, 'img/djs_all.png', image_index);
     var input = new InputHandler(player)
@@ -752,8 +752,11 @@ function menu() {
     $('#username_display').text(name);
     banner = 1;
     game_paused = 200;
-    level1(player, input)
+    level2(player, input)
 }
+
+
+
 
 
 //function banner(type) {
@@ -784,16 +787,16 @@ function menu() {
 //}
 //
 //
-//function gameOver() {
-//    let canvas = document.getElementById("gameScreen");
-//    let ctx = canvas.getContext("2d");
-//    drawing = new Image();
-//    drawing.src = "img/banners/gameover.png"
-//    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-//    ctx.drawImage(drawing, 60, 150)
-//    game_paused = 1000;
-//
-//}
+function gameOver() {
+   let canvas = document.getElementById("gameScreen");
+   let ctx = canvas.getContext("2d");
+   drawing = new Image();
+   drawing.src = "img/banners/gameover.png"
+   ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+   ctx.drawImage(drawing, 60, 150)
+   game_paused = 1000;
+
+}
 
 // Level functions
 /****************************************************************************************************/
@@ -822,7 +825,7 @@ function level2(player, input) {
         lastTime = timeStamp;
         ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-//        console.log(game_paused);
+//        console.log(game_paused); 
         if (game_paused <= 0) {
             ctx.font = "20px Arial";
             ctx.fillText("EXIT", 655, 450);
@@ -857,12 +860,15 @@ function level2(player, input) {
             requestAnimationFrame(gameLoop2);
         else {
             if (lost === true){
-               banner = 4
+                banner = 4;
                 game_paused = 200;
+                requestAnimationFrame(gameLoop2);
             }
-            else{
-                banner = 0
+            else {
+                banner = 0;
                 game_paused = 200;
+                requestAnimationFrame(gameLoop2);
+
             }
             
             
