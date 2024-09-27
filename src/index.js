@@ -752,7 +752,7 @@ function menu() {
     $('#username_display').text(name);
     banner = 1;
     game_paused = 200;
-    level2(player, input)
+    level1(player, input)
 }
 
 
