@@ -1,3 +1,17 @@
+
+function reportWindowSize() {
+    console.log('resizee!');
+    if (window.innerHeight >= 500 && window.innerWidth >= 750) {
+        $('.tooSmall').addClass('hidden');
+        $('.wrapper').removeClass('hidden');
+    } else {
+        $('.tooSmall').removeClass('hidden');
+        $('.wrapper').addClass('hidden');
+    }
+}
+reportWindowSize();
+window.onresize = reportWindowSize;
+
 //GLOBALS
 const GAME_WIDTH = 750;
 const GAME_HEIGHT = 500;
@@ -47,15 +61,15 @@ var winRect = {
 }
 
 var dj_urls = ['img/djs/gladstone.png',
-              'img/djs/noah.png',
-              'img/djs/cj.png',
-              'img/djs/brendan.png',
-              'img/djs/pat.png',
-              'img/djs/elias.png',
-              'img/djs/michael.png',
-              'img/djs/ryan.png',
-              'img/djs/brad.png',
-             ]
+    'img/djs/noah.png',
+    'img/djs/cj.png',
+    'img/djs/brendan.png',
+    'img/djs/pat.png',
+    'img/djs/elias.png',
+    'img/djs/michael.png',
+    'img/djs/ryan.png',
+    'img/djs/brad.png',
+]
 
 var collected = []
 var npc_names = ["Veronica", "Lily", "George", "Christine", "Morgan", "Kirby", "Caitlyn", "Vera", "Jorge", "Irene", "Richie", "Jay", "Jisun", "Cassie", "Stephanie", "Liam", "Justin"]
@@ -740,7 +754,7 @@ $("#submit").click(function () {
 
 
 function menu() {
-    
+
     $('.gameWrapper').removeClass('hidden');
     $('.menuOptions').addClass('hidden');
     $('#missions').removeClass('hidden');
@@ -788,13 +802,13 @@ function menu() {
 //
 //
 function gameOver() {
-   let canvas = document.getElementById("gameScreen");
-   let ctx = canvas.getContext("2d");
-   drawing = new Image();
-   drawing.src = "img/banners/gameover.png"
-   ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-   ctx.drawImage(drawing, 60, 150)
-   game_paused = 1000;
+    let canvas = document.getElementById("gameScreen");
+    let ctx = canvas.getContext("2d");
+    drawing = new Image();
+    drawing.src = "img/banners/gameover.png"
+    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    ctx.drawImage(drawing, 60, 150)
+    game_paused = 1000;
 
 }
 
@@ -805,7 +819,7 @@ function level2(player, input) {
     //GET CANVAS, CTX, SHOW MISSION
     let canvas = document.getElementById("gameScreen");
     let ctx = canvas.getContext("2d");
-//    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    //    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
     document.getElementById("missions").innerHTML = "Adjust the lights and levels and then head to the exit! Don't get hit!"
 
     document.getElementById("bodyNotifications").innerHTML = "<br> Use ARROWS to move! <br><br>Use SPACE to turn on the lights! <br> Dont get hit!"
@@ -825,7 +839,7 @@ function level2(player, input) {
         lastTime = timeStamp;
         ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-//        console.log(game_paused); 
+        //        console.log(game_paused); 
         if (game_paused <= 0) {
             ctx.font = "20px Arial";
             ctx.fillText("EXIT", 655, 450);
@@ -835,23 +849,23 @@ function level2(player, input) {
 
             updateRecordEnemy(deltaTime)
             drawRecordEnemy(ctx)
-            
+
             drawLights(ctx);
         } else {
-            if(banner === 0){
+            if (banner === 0) {
                 drawing = new Image();
                 drawing.src = "img/banners/winner.png"
                 ctx.drawImage(drawing, 150, 160)
             }
-            else if(banner === 2){
+            else if (banner === 2) {
                 drawing = new Image();
                 drawing.src = "img/banners/level2.png"
                 ctx.drawImage(drawing, 150, 160)
             }
-            else if(banner === 4){
+            else if (banner === 4) {
                 drawing = new Image();
                 drawing.src = "img/banners/gameover.png"
-                ctx.drawImage(drawing,150, 160)
+                ctx.drawImage(drawing, 150, 160)
             }
             game_paused--
         }
@@ -859,7 +873,7 @@ function level2(player, input) {
         if (!checkWin2(player) && lost === false)
             requestAnimationFrame(gameLoop2);
         else {
-            if (lost === true){
+            if (lost === true) {
                 banner = 4;
                 game_paused = 200;
                 requestAnimationFrame(gameLoop2);
@@ -870,8 +884,8 @@ function level2(player, input) {
                 requestAnimationFrame(gameLoop2);
 
             }
-            
-            
+
+
         }
 
 
@@ -885,7 +899,7 @@ function level1(player, input) {
     ///GET CANVAS, CTX, SHOW MISSION
     let canvas = document.getElementById("gameScreen");
     let ctx = canvas.getContext("2d");
-//    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    //    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
     document.getElementById("missions").innerHTML = "Get your RECORD, USB, and DRINK and bring it back to the RED DJ PODIUM before your set begins!"
 
     //CREATE PLAYER
@@ -905,7 +919,7 @@ function level1(player, input) {
     function gameLoop(timeStamp) {
         let deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
-        
+
 
         if (game_paused <= 0) {
             ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -924,18 +938,18 @@ function level1(player, input) {
 
             player.update(deltaTime, level);
             player.draw(ctx);
-            
+
             //checkCollisions(player)
             //_drawPossiblePlaces(ctx)
         } else {
-            if(banner === 1){
+            if (banner === 1) {
                 drawing = new Image();
                 drawing.src = "img/banners/level1.png"
                 ctx.drawImage(drawing, 150, 160)
             }
             game_paused--;
         }
-        
+
         if (!checkWin1(level))
             requestAnimationFrame(gameLoop);
         else {
@@ -950,7 +964,7 @@ function level1(player, input) {
     requestAnimationFrame(gameLoop);
 }
 
-if (window.innerWidth < 1000 || window.innerHeight < 610) {
-    alert("Window too small! Please use a full screen greater than ~ 10 X 6 inches to play")
-}
+// if (window.innerWidth < 1000 || window.innerHeight < 610) {
+//     alert("Window too small! Please use a full screen greater than ~ 10 X 6 inches to play")
+// }
 

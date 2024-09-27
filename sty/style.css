@@ -27,6 +27,17 @@ margin-top: -100px; /* Negative half of height. */
 margin-left: -250px; /* Negative half of width. */
 }
 
+.tooSmall {
+    margin: 10px 30px;
+    padding: 40px;
+    border-radius: 25px;
+    max-width: 400px;
+    color: white;
+    margin: auto;
+    background: #333;
+    margin-top:30px;
+}
+
 body{
     background-color: black;
 }
