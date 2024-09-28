@@ -118,7 +118,7 @@ function Npc() {
     //Find random user
     var ranCol = -1
     do {
-        ranCol = Math.floor(Math.random() * 17)
+        ranCol = Math.floor(Math.random() * 16)
         if (npcs.length >= 17)
             break;
     } while (usedNPCSprites.includes(ranCol))
